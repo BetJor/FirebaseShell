@@ -8,7 +8,7 @@ import { Toaster } from "@/components/ui/toaster"
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
-import { AppShell } from "@/components/app-shell"
+import { AppShell } from "@/components/shell/app-shell"
 
 const inter = Inter({ subsets: ['latin'] })
 

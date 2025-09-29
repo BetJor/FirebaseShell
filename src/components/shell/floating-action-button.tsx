@@ -1,10 +1,10 @@
 
 "use client"
 
-import { Button } from "./ui/button"
+import { Button } from "@/components/ui/button"
 import { FilePlus, Plus } from "lucide-react"
-import { useTabs } from "@/hooks/use-tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import { useTabs } from "@/components/shell/use-tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function FloatingActionButton() {
     const { openTab } = useTabs();

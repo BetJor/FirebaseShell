@@ -31,13 +31,13 @@ import {
 } from "@/components/ui/card"
 import { FilePlus, GanttChartSquare, GripVertical, Plus, Star } from "lucide-react"
 import { Button } from "./ui/button"
-import { useTabs } from "@/hooks/use-tabs"
+import { useTabs } from "@/components/shell/use-tabs"
 import { getActionById, getActionTypes, getCategories, getCenters, getResponsibilityRoles, getSubcategories, getAffectedAreas } from "@/lib/data"
 import { ActionDetailsTab } from "./action-details-tab"
 import { cn } from '@/lib/utils';
 import { useFollowAction } from '@/hooks/use-follow-action';
 import { ActionStatusBadge } from './action-status-badge';
-import { FloatingActionButton } from './floating-action-button';
+import { FloatingActionButton } from '@/components/shell/floating-action-button';
 
 interface DashboardClientProps {
     actions: ImprovementAction[];

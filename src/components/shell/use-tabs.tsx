@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from './use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
 // Import all page components that can be opened in a tab
@@ -81,12 +81,16 @@ export function TabsProvider({ children, initialPath }: { children: ReactNode, i
     const [tabs, setTabs] = useState<Tab[]>([]);
     const [activeTab, setActiveTabState] = useState<string | null>(null);
     const { user } = useAuth();
-    const [lastUser, setLastUser] = useState(user?.uid);
+    const [lastUser, setLastUser] = useState(user?.id);
     const router = useRouter();
 
     const setActiveTab = useCallback((tabId: string) => {
         setActiveTabState(tabId);
-    }, []);
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab) {
+            router.push(tab.path, { scroll: false });
+        }
+    }, [tabs, router]);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
@@ -129,13 +133,7 @@ export function TabsProvider({ children, initialPath }: { children: ReactNode, i
                     console.error(`No page component found for path: ${tabData.path}`);
                     newTab = { ...tabData, id: tabId, content: <div>Not Found</div>, isLoading: false };
                 } else {
-                    newTab = { ...tabData, id: tabId, content: <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>, isLoading: true };
-                     // DEMO: Simulate network delay
-                    setTimeout(() => {
-                        setTabs(currentTabs => currentTabs.map(t => 
-                            t.id === tabId ? { ...t, content: <PageComponent />, isLoading: false } : t
-                        ));
-                    }, 500);
+                     newTab = { ...tabData, id: tabId, content: <PageComponent />, isLoading: false };
                 }
             }
             
@@ -157,10 +155,10 @@ export function TabsProvider({ children, initialPath }: { children: ReactNode, i
 
 
     useEffect(() => {
-        if (user?.uid !== lastUser) {
+        if (user?.id !== lastUser) {
             setTabs([]);
             setActiveTabState(null);
-            setLastUser(user?.uid);
+            setLastUser(user?.id);
         }
     }, [user, lastUser]);
     
@@ -205,10 +203,16 @@ export function TabsProvider({ children, initialPath }: { children: ReactNode, i
         closeCurrentTab,
         setActiveTab,
     };
+    
+    const activeTabData = tabs.find(tab => tab.id === activeTab);
 
     return (
         <TabsContext.Provider value={value}>
-            {children}
+             {tabs.map(tab => (
+                <div key={tab.id} style={{ display: tab.id === activeTab ? 'block' : 'none' }} className="h-full">
+                    {tab.content}
+                </div>
+            ))}
         </TabsContext.Provider>
     );
 }

@@ -20,13 +20,13 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LanguageSwitcher } from "./language-switcher"
+import { LanguageSwitcher } from "@/components/shell/language-switcher"
 import { useAuth } from "@/hooks/use-auth"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
 import React from "react"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { useTabs } from "@/hooks/use-tabs"
+import { useTabs } from "@/components/shell/use-tabs"
 
 
 const pageConfig: { [key: string]: { icon: React.ElementType, titleKey: string } } = {

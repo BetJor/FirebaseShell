@@ -1,15 +1,14 @@
 
 "use client";
 
-import { Header } from "@/components/header"
-import { AppSidebar } from "@/components/app-sidebar"
-import { DynamicTabs } from "@/components/dynamic-tabs"
+import { Header } from "@/components/shell/header"
+import { AppSidebar } from "@/components/shell/app-sidebar"
+import { DynamicTabs } from "@/components/shell/dynamic-tabs"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { TabsProvider, useTabs } from "@/hooks/use-tabs"
+import { TabsProvider } from "@/components/shell/use-tabs"
 import { ActionStateProvider } from "@/hooks/use-action-state"
 
 function MainLayout({ children }: { children: React.ReactNode }) {
-    const { tabs, activeTab } = useTabs();
     
     return (
         <div className="relative flex h-screen w-full flex-col">
@@ -21,11 +20,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                         <DynamicTabs />
                     </div>
                     <div className="flex-grow">
-                        {tabs.map(tab => (
-                            <div key={tab.id} style={{ display: tab.id === activeTab ? 'block' : 'none' }} className="h-full">
-                                {tab.content}
-                            </div>
-                        ))}
+                       {children}
                     </div>
                 </main>
             </div>
