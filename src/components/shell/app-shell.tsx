@@ -7,7 +7,7 @@ import { DynamicTabs } from "@/components/shell/dynamic-tabs"
 import { SidebarProvider } from "@/components/shell/ui/sidebar"
 import { TabsProvider } from "@/components/shell/hooks/use-tabs"
 
-function MainLayout({ children }: { children: React.ReactNode }) {
+function MainLayout() {
     
     return (
         <div className="relative flex h-screen w-full flex-col">
@@ -18,8 +18,8 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                     <div className="mb-6">
                         <DynamicTabs />
                     </div>
-                    <div className="flex-grow">
-                       {children}
+                    <div className="flex-grow h-full">
+                       {/* El contingut es renderitza a través de TabsProvider */}
                     </div>
                 </main>
             </div>
@@ -27,13 +27,11 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function AppShell({ initialPath, children }: { initialPath: string, children: React.ReactNode }) {
+export function AppShell({ initialPath }: { initialPath: string }) {
     return (
         <SidebarProvider>
             <TabsProvider initialPath={initialPath}>
-                <MainLayout>
-                    {children}
-                </MainLayout>
+                <MainLayout />
             </TabsProvider>
         </SidebarProvider>
     )
