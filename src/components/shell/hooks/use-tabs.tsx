@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -6,56 +5,15 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
 
-import DashboardPage from '@/app/dashboard/page';
-import ActionsPage from '@/app/actions/page';
-import NewActionPage from '@/app/actions/new/page';
-import SettingsPage from '@/app/settings/page';
-import AiSettingsPage from '@/app/ai-settings/page';
-import MyGroupsPage from '@/app/my-groups/page';
-import ActionDetailPage from '@/app/actions/[id]/page';
-import UserManagementPage from '@/app/user-management/page';
-import ReportsPage from '@/app/reports/page';
-import FirestoreRulesPage from '@/app/firestore-rules/page';
-import WorkflowPage from '@/app/workflow/page';
-
-const pageComponentMapping: { [key: string]: React.ComponentType<any> | undefined } = {
-    '/dashboard': DashboardPage,
-    '/actions': ActionsPage,
-    '/actions/new': NewActionPage,
-    '/settings': SettingsPage,
-    '/workflow': WorkflowPage,
-    '/ai-settings': AiSettingsPage,
-    '/reports': ReportsPage,
-    '/my-groups': MyGroupsPage,
-    '/user-management': UserManagementPage,
-    '/firestore-rules': FirestoreRulesPage,
-};
-
-const getPageComponent = (path: string): React.ComponentType<any> | undefined => {
-  let cleanPath = path.split('?')[0];
-
-  if (pageComponentMapping[cleanPath]) {
-    return pageComponentMapping[cleanPath];
-  }
-  if (cleanPath.startsWith('/actions/')) {
-    return ActionDetailPage;
-  }
-  return undefined;
-};
-
-
 export interface Tab {
     id: string; 
     title: string;
     path: string;
     icon: React.ComponentType<{ className?: string }>;
     isClosable: boolean;
-    content: ReactNode;
-    isLoading: boolean;
 }
 
-type TabInput = Omit<Tab, 'id' | 'content' | 'isLoading'> & { 
-    content?: ReactNode;
+export type TabInput = Omit<Tab, 'id'> & { 
     loader?: () => Promise<ReactNode>;
 };
 
@@ -66,20 +24,45 @@ interface TabsContextType {
     closeTab: (tabId: string) => void;
     closeCurrentTab: () => void;
     setActiveTab: (tabId: string) => void;
+    getTabContent: (tabId: string) => ReactNode;
 }
 
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
 
-export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
+const pageLoaders: Record<string, () => Promise<ReactNode>> = {};
+
+export function TabsProvider({ children, initialTabs }: { children: ReactNode, initialTabs: TabInput[] }) {
     const [tabs, setTabs] = useState<Tab[]>([]);
     const [activeTab, setActiveTabState] = useState<string | null>(null);
+    const [tabContents, setTabContents] = useState<Record<string, ReactNode>>({});
     const { user } = useAuth();
     const [lastUser, setLastUser] = useState(user?.id);
     const router = useRouter();
+    const pathname = usePathname();
 
-    const setActiveTab = (tabId: string) => {
+    const setActiveTab = useCallback((tabId: string) => {
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab && tab.path !== pathname) {
+            router.push(tab.path);
+        }
         setActiveTabState(tabId);
-    };
+    }, [tabs, router, pathname]);
+
+    const loadContent = useCallback((tabId: string, loader: () => Promise<ReactNode>) => {
+        setTabContents(prev => ({
+            ...prev,
+            [tabId]: <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>
+        }));
+
+        setTimeout(() => {
+             loader().then(content => {
+                setTabContents(prev => ({ ...prev, [tabId]: content }));
+            }).catch(error => {
+                console.error(`Error loading content for tab ${tabId}:`, error);
+                setTabContents(prev => ({ ...prev, [tabId]: <div>Error al cargar el contenido.</div> }));
+            });
+        }, 300); // Small delay for UX
+    }, []);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
@@ -93,56 +76,44 @@ export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
                 return prevTabs;
             }
 
-            let newTab: Tab;
+            const newTab: Tab = { ...tabData, id: tabId };
+            
             if (tabData.loader) {
-                newTab = { 
-                    ...tabData, 
-                    id: tabId, 
-                    content: <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>, 
-                    isLoading: true 
-                };
-
-                setTimeout(() => {
-                    tabData.loader!().then(loadedContent => {
-                        setTabs(currentTabs => currentTabs.map(t => 
-                            t.id === tabId ? { ...t, content: loadedContent, isLoading: false } : t
-                        ));
-                    }).catch(error => {
-                        console.error("Error loading tab content:", error);
-                        setTabs(currentTabs => currentTabs.map(t => 
-                            t.id === tabId ? { ...t, content: <div>Error loading content.</div>, isLoading: false } : t
-                        ));
-                    });
-                }, 500);
-
-            } else {
-                const PageComponent = getPageComponent(tabData.path);
-                if (!PageComponent) {
-                    console.error(`No page component found for path: ${tabData.path}`);
-                    newTab = { ...tabData, id: tabId, content: <div>Not Found</div>, isLoading: false };
-                } else {
-                     newTab = { ...tabData, id: tabId, content: <PageComponent />, isLoading: false };
-                }
+                pageLoaders[tabId] = tabData.loader;
+                loadContent(tabId, tabData.loader);
             }
             
             setActiveTab(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, [activeTab]);
+    }, [activeTab, setActiveTab, loadContent]);
+
+    useEffect(() => {
+      const currentTab = tabs.find(t => t.path === pathname);
+      if (currentTab) {
+        if(activeTab !== currentTab.id) {
+          setActiveTabState(currentTab.id);
+        }
+      } else {
+        // This case can happen if the user navigates directly via URL
+        // A more robust solution would be to match dynamic routes here
+      }
+    }, [pathname, tabs, activeTab]);
     
-     useEffect(() => {
+    useEffect(() => {
         if (user && tabs.length === 0 && initialTabs) {
             initialTabs.forEach(tab => openTab(tab));
             if(initialTabs.length > 0) {
                 setActiveTab(initialTabs[0].path);
             }
         }
-    }, [user, tabs.length, openTab, initialTabs]);
+    }, [user, tabs.length, openTab, initialTabs, setActiveTab]);
 
 
     useEffect(() => {
         if (user?.id !== lastUser) {
             setTabs([]);
+            setTabContents({});
             setActiveTabState(null);
             setLastUser(user?.id);
         }
@@ -161,16 +132,20 @@ export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
                 const newIndex = index === 0 ? 0 : index - 1;
                 nextActiveTabId = newTabs[newIndex].id;
             } else {
-                nextActiveTabId = null; // No more tabs
+                nextActiveTabId = null;
             }
         }
         
         setTabs(newTabs);
+        setTabContents(prev => {
+            const newContents = { ...prev };
+            delete newContents[tabId];
+            return newContents;
+        });
 
         if (nextActiveTabId) {
             setActiveTab(nextActiveTabId);
         } else if (newTabs.length === 0 && initialTabs.length > 0) {
-            // Re-open default tab if all are closed
             openTab(initialTabs[0]);
         }
     };
@@ -181,6 +156,10 @@ export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
         }
     }
 
+    const getTabContent = (tabId: string) => {
+        return tabContents[tabId] || children; // Fallback to children for initial render
+    }
+
     const value = {
         tabs,
         activeTab,
@@ -188,17 +167,16 @@ export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
         closeTab,
         closeCurrentTab,
         setActiveTab,
+        getTabContent,
     };
-    
-    const activeTabData = tabs.find(tab => tab.id === activeTab);
 
     return (
         <TabsContext.Provider value={value}>
-             {tabs.map(tab => (
-                <div key={tab.id} style={{ display: tab.id === activeTab ? 'block' : 'none' }} className="h-full">
-                    {tab.content}
+            {activeTab ? (
+                <div style={{ display: 'block' }} className="h-full">
+                    {getTabContent(activeTab)}
                 </div>
-            ))}
+            ) : children}
         </TabsContext.Provider>
     );
 }

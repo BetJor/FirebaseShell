@@ -9,6 +9,8 @@ import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
+import { TabsProvider } from "@/components/shell/hooks/use-tabs";
+import { Home } from "lucide-react";
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -54,9 +56,20 @@ export default function RootLayout({
       <body className={inter.className}>
           <AuthProvider>
             <ActionStateProvider>
-              <AppContent>
-                {children}
-              </AppContent>
+               <TabsProvider
+                 initialTabs={[
+                    {
+                      path: '/dashboard',
+                      title: 'Panel de Control',
+                      icon: Home,
+                      isClosable: false,
+                    },
+                ]}
+               >
+                <AppContent>
+                    {children}
+                </AppContent>
+              </TabsProvider>
             </ActionStateProvider>
             <Toaster />
           </AuthProvider>
