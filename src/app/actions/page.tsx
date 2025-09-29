@@ -3,7 +3,7 @@
 import { useActionState } from "@/hooks/use-action-state";
 import { ActionsTable } from "@/components/actions-table"
 import { Loader2 } from "lucide-react"
-import { FloatingActionButton } from "@/components/floating-action-button";
+import { FloatingActionButton } from "@/components/shell/floating-action-button";
 
 export default function ActionsPage() {
   const { actions, isLoading } = useActionState();

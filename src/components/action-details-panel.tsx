@@ -6,7 +6,6 @@ import { AttachmentsSection } from "./action-details/attachments-section"
 import { CommentsSection } from "./action-details/comments-section"
 import { DetailsSection } from "./action-details/details-section"
 import { LinkedActionSection } from "./action-details/linked-action-section"
-import { useTabs } from "@/components/shell/use-tabs"
 
 
 interface ActionDetailsPanelProps {
@@ -15,7 +14,6 @@ interface ActionDetailsPanelProps {
 }
 
 export function ActionDetailsPanel({ action, onActionUpdate }: ActionDetailsPanelProps) {
-  const { user, updateDashboardLayout } = useAuth();
   
   return (
     <div className="flex flex-col gap-6">
