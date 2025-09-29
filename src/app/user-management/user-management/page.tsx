@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -22,7 +21,7 @@ import { Loader2, Pencil, PlusCircle, Trash2, LogIn } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import type { User } from "@/lib/types";
 import { getUsers, addUser, updateUser, deleteUser } from "@/lib/data";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/shell/hooks/use-toast";
 import { UserFormDialog } from "@/components/user-form-dialog";
 import {
   AlertDialog,

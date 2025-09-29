@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useMemo, useCallback } from 'react';
@@ -7,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShieldAlert, ExternalLink, Trash2, UserPlus, Copy, ShieldPlus, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/shell/hooks/use-toast";
 
 interface AclEntry {
   role: string;

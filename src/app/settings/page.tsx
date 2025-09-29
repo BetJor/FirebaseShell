@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -13,7 +11,7 @@ import {
     deleteMasterDataItem,
     getResponsibilityRoles,
 } from "@/lib/data";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/shell/hooks/use-toast";
 import type { MasterDataItem } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 

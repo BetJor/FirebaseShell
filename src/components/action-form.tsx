@@ -1,4 +1,3 @@
-
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -24,7 +23,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { getPrompt } from "@/lib/data"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/shell/hooks/use-toast"
 import { useState, useMemo, useEffect, useRef } from "react"
 import { Loader2, Mic, MicOff, Wand2, Save, Send, Ban, ChevronsUpDown, Check } from "lucide-react"
 import { cn } from "@/lib/utils"

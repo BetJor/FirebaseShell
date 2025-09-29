@@ -1,4 +1,3 @@
-
 "use client"
 
 import { useState, useEffect, useRef } from "react"
@@ -19,7 +18,7 @@ import type { ImprovementAction, User } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/shell/hooks/use-toast"
 import { suggestAnalysisAndActions, type SuggestAnalysisOutput } from "@/ai/flows/improveAnalysis"
 import {
   Dialog,

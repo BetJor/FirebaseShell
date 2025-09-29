@@ -1,10 +1,9 @@
-
 "use client";
 
 import "./globals.css"
 import { Inter } from 'next/font/google'
 import { AuthProvider, useAuth } from "@/hooks/use-auth"
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/shell/ui/toaster"
 import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"

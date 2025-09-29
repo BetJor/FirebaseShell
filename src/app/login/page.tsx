@@ -1,4 +1,3 @@
-
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Chrome, LogIn, Mail, Key } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/shell/hooks/use-toast";
 
 export default function LoginPage() {
   const { signInWithGoogle, signInWithEmail, sendPasswordReset } = useAuth();

@@ -1,8 +1,7 @@
-
 "use client"
 
 import { useState, useEffect } from "react"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/shell/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { createAction, getActionTypes, getCategories, getSubcategories, getAffectedAreas, getResponsibilityRoles, getCenters } from "@/lib/data"

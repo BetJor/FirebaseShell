@@ -1,5 +1,3 @@
-
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -21,7 +19,7 @@ import { Separator } from "@/components/ui/separator"
 import { format, parseISO } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/shell/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import type { ProposedActionStatus } from "@/lib/types"
 import { useRouter } from "next/navigation"

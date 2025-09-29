@@ -1,9 +1,8 @@
-
 "use client"
 
 import { useState } from "react"
 import { useAuth } from "@/hooks/use-auth"
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/components/shell/hooks/use-toast"
 import { updateAction, getActionById } from "@/lib/data"
 import type { ImprovementAction, ActionComment } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
