@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -76,13 +77,17 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
 
     const setActiveTab = useCallback((tabId: string) => {
         console.log(`[TabsProvider] setActiveTab called for: ${tabId}`);
-        const tab = tabs.find(t => t.id === tabId);
+        setActiveTabState(tabId);
+    }, []);
+
+    // Effect to handle navigation when activeTab changes
+    useEffect(() => {
+        const tab = tabs.find(t => t.id === activeTab);
         if (tab && tab.path !== pathname) {
             console.log(`[TabsProvider] Navigating to ${tab.path}`);
             router.push(tab.path);
         }
-        setActiveTabState(tabId);
-    }, [tabs, router, pathname]);
+    }, [activeTab, tabs, pathname, router]);
 
     const loadContent = useCallback((tabId: string, tabData: TabInput) => {
         setTabContents(prev => ({
