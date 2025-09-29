@@ -75,11 +75,6 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const router = useRouter();
     const pathname = usePathname();
 
-    const setActiveTab = useCallback((tabId: string) => {
-        console.log(`[TabsProvider] setActiveTab called for: ${tabId}`);
-        setActiveTabState(tabId);
-    }, []);
-
     // Effect to handle navigation when activeTab changes
     useEffect(() => {
         const tab = tabs.find(t => t.id === activeTab);
@@ -112,6 +107,11 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
         }
     }, []);
 
+    const setActiveTab = useCallback((tabId: string) => {
+        console.log(`[TabsProvider] setActiveTab called for: ${tabId}`);
+        setActiveTabState(tabId);
+    }, []);
+
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
         console.log(`[TabsProvider] openTab called for: ${tabId}`);
@@ -135,6 +135,46 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
         });
     }, [activeTab, setActiveTab, loadContent]);
 
+    const closeTab = useCallback((tabId: string) => {
+        console.log(`[TabsProvider] closeTab called for: ${tabId}`);
+        let nextActiveTabId: string | null = null;
+        
+        setTabs(prevTabs => {
+            const index = prevTabs.findIndex(tab => tab.id === tabId);
+            if (index === -1) return prevTabs;
+
+            const newTabs = prevTabs.filter(t => t.id !== tabId);
+
+            if (activeTab === tabId) {
+                if (newTabs.length > 0) {
+                    const newIndex = index === 0 ? 0 : index - 1;
+                    nextActiveTabId = newTabs[newIndex].id;
+                }
+            }
+            return newTabs;
+        });
+
+        setTabContents(prev => {
+            const newContents = { ...prev };
+            delete newContents[tabId];
+            return newContents;
+        });
+
+        if (nextActiveTabId) {
+            setActiveTab(nextActiveTabId);
+        } else if (tabs.length - 1 === 0 && initialTabs.length > 0) {
+            // If we are closing the last tab, open the initial one.
+            openTab(initialTabs[0]);
+        }
+    }, [tabs, activeTab, initialTabs, setActiveTab, openTab]);
+
+
+    const closeCurrentTab = useCallback(() => {
+        if (activeTab) {
+            closeTab(activeTab);
+        }
+    }, [activeTab, closeTab]);
+
     useEffect(() => {
         if (user && tabs.length === 0 && initialTabs) {
              console.log("[TabsProvider] Initializing tabs for new user session.");
@@ -156,46 +196,10 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
         }
     }, [user, lastUser]);
     
-    const closeTab = (tabId: string) => {
-        console.log(`[TabsProvider] closeTab called for: ${tabId}`);
-        let nextActiveTabId: string | null = null;
-        
-        const index = tabs.findIndex(tab => tab.id === tabId);
-        if (index === -1) return;
-        
-        const newTabs = tabs.filter(t => t.id !== tabId);
-
-        if (activeTab === tabId) {
-            if (newTabs.length > 0) {
-                const newIndex = index === 0 ? 0 : index - 1;
-                nextActiveTabId = newTabs[newIndex].id;
-            }
-        }
-        
-        setTabs(newTabs);
-        setTabContents(prev => {
-            const newContents = { ...prev };
-            delete newContents[tabId];
-            return newContents;
-        });
-
-        if (nextActiveTabId) {
-            setActiveTab(nextActiveTabId);
-        } else if (newTabs.length === 0 && initialTabs.length > 0) {
-            openTab(initialTabs[0]);
-        }
-    };
-
-    const closeCurrentTab = () => {
-        if (activeTab) {
-            closeTab(activeTab);
-        }
-    }
-
-    const getTabContent = (tabId: string) => {
+    const getTabContent = useCallback((tabId: string) => {
         console.log(`[TabsProvider] getTabContent called for: ${tabId}. Content found: ${!!tabContents[tabId]}`);
         return tabContents[tabId] || children;
-    }
+    }, [tabContents, children]);
 
     const value = {
         tabs,
