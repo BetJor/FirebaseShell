@@ -42,13 +42,16 @@ export function TabsProvider({ children }: { children: ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
-    const setActiveTab = useCallback((tabId: string) => {
+    const setActiveTab = (tabId: string) => {
         setActiveTabState(tabId);
-        const tab = tabs.find(t => t.id === tabId);
-        if (tab) {
+    };
+
+    useEffect(() => {
+        const tab = tabs.find(t => t.id === activeTab);
+        if (tab && tab.path !== pathname) {
             router.push(tab.path, { scroll: false });
         }
-    }, [tabs, router]);
+    }, [activeTab, tabs, pathname, router]);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
@@ -91,7 +94,7 @@ export function TabsProvider({ children }: { children: ReactNode }) {
             setActiveTab(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, [activeTab, setActiveTab, children]);
+    }, [activeTab, setActiveTabState, children]);
     
      useEffect(() => {
         if (user && tabs.length === 0) {
@@ -153,15 +156,12 @@ export function TabsProvider({ children }: { children: ReactNode }) {
         openTab,
         closeTab,
         closeCurrentTab,
-        setActiveTab,
+        setActiveTab: setActiveTabState,
     };
     
-    const activeTabData = tabs.find(tab => tab.id === activeTab);
-    const displayedContent = activeTabData ? activeTabData.content : children;
-
     return (
         <TabsContext.Provider value={value}>
-             {displayedContent}
+             {children}
         </TabsContext.Provider>
     );
 }
