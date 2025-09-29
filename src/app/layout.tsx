@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google'
 import { AuthProvider, useAuth } from "@/hooks/use-auth"
 import { Toaster } from "@/components/shell/ui/toaster"
 import { useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
@@ -18,19 +18,20 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { activeTab, getTabContent } = useTabs();
   const router = useRouter();
-  const pathname = usePathname();
   
   useEffect(() => {
-    if (!loading && !user && !pathname.includes('/login')) {
+    // We get the pathname from window.location because usePathname causes re-renders
+    const currentPathname = window.location.pathname;
+    if (!loading && !user && !currentPathname.includes('/login')) {
       router.push(`/login`);
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, router]);
 
   if (loading) {
     return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /><span>Cargando...</span></div>;
   }
   
-  const isLoginPage = pathname.includes('/login');
+  const isLoginPage = typeof window !== 'undefined' && window.location.pathname.includes('/login');
 
   if (isLoginPage) {
     return <>{children}</>;
