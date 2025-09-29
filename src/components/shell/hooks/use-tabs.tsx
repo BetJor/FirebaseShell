@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
@@ -71,12 +70,16 @@ interface TabsContextType {
 
 const TabsContext = createContext<TabsContextType | undefined>(undefined);
 
-export function TabsProvider({ children, initialTabs }: { children: ReactNode, initialTabs: TabInput[] }) {
+export function TabsProvider({ initialTabs }: { initialTabs: TabInput[] }) {
     const [tabs, setTabs] = useState<Tab[]>([]);
-    const [activeTab, setActiveTab] = useState<string | null>(null);
+    const [activeTab, setActiveTabState] = useState<string | null>(null);
     const { user } = useAuth();
     const [lastUser, setLastUser] = useState(user?.id);
     const router = useRouter();
+
+    const setActiveTab = (tabId: string) => {
+        setActiveTabState(tabId);
+    };
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
@@ -125,7 +128,7 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
             setActiveTab(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, [activeTab, setActiveTab]);
+    }, [activeTab]);
     
      useEffect(() => {
         if (user && tabs.length === 0 && initialTabs) {
@@ -140,7 +143,7 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     useEffect(() => {
         if (user?.id !== lastUser) {
             setTabs([]);
-            setActiveTab(null);
+            setActiveTabState(null);
             setLastUser(user?.id);
         }
     }, [user, lastUser]);

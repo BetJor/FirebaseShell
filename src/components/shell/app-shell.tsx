@@ -1,13 +1,13 @@
-
 "use client";
 
 import { Header } from "@/components/shell/header"
 import { AppSidebar } from "@/components/shell/app-sidebar"
 import { DynamicTabs } from "@/components/shell/dynamic-tabs"
 import { SidebarProvider } from "@/components/shell/ui/sidebar"
+import { TabsProvider } from "@/components/shell/hooks/use-tabs"
+import { Home } from "lucide-react"
 
-function MainLayout({ children }: { children: React.ReactNode }) {
-    
+function MainLayout() {
     return (
         <div className="relative flex h-screen w-full flex-col">
             <Header />
@@ -18,7 +18,7 @@ function MainLayout({ children }: { children: React.ReactNode }) {
                         <DynamicTabs />
                     </div>
                     <div className="flex-grow h-full">
-                       {children}
+                        <TabsProvider />
                     </div>
                 </main>
             </div>
@@ -26,12 +26,21 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell() {
     return (
         <SidebarProvider>
-            <MainLayout>
-                {children}
-            </MainLayout>
+            <TabsProvider
+                initialTabs={[
+                    {
+                      path: '/dashboard',
+                      title: 'Panel de Control',
+                      icon: Home,
+                      isClosable: false,
+                    },
+                ]}
+            >
+                <MainLayout />
+            </TabsProvider>
         </SidebarProvider>
     )
 }

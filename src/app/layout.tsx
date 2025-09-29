@@ -9,8 +9,6 @@ import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
-import { TabsProvider } from "@/components/shell/hooks/use-tabs"
-import { Home } from "lucide-react"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -40,20 +38,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   return (
-    <TabsProvider
-      initialTabs={[
-        {
-          path: '/dashboard',
-          title: 'Panel de Control',
-          icon: Home,
-          isClosable: false,
-        },
-      ]}
-    >
-      <AppShell>
-        {children}
-      </AppShell>
-    </TabsProvider>
+    <AppShell>
+      {children}
+    </AppShell>
   );
 }
 
