@@ -47,12 +47,16 @@ export function AppSidebar() {
   
   if (!user) return null;
 
+  // --- DEFINICIÓ DELS ELEMENTS DEL MENÚ PRINCIPAL ---
+  // Aquest array conté els enllaços que veuran tots els usuaris.
   const mainNavItems = [
     { href: `/dashboard`, icon: Home, label: "Panel de Control" },
     { href: `/actions`, icon: ListChecks, label: "Acciones" },
     { href: `/reports`, icon: BarChart3, label: "Informes" },
   ]
   
+  // --- DEFINICIÓ DELS ELEMENTS DEL MENÚ D'ADMINISTRACIÓ ---
+  // Aquest array conté els enllaços que només veuran els administradors.
   const adminSettingsNavItems = [
     { href: `/settings`, icon: Settings, label: "Configuración" },
     { href: `/workflow`, icon: GanttChartSquare, label: "Workflow" },
