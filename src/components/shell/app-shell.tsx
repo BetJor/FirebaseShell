@@ -5,7 +5,6 @@ import { Header } from "@/components/shell/header"
 import { AppSidebar } from "@/components/shell/app-sidebar"
 import { DynamicTabs } from "@/components/shell/dynamic-tabs"
 import { SidebarProvider } from "@/components/shell/ui/sidebar"
-import { TabsProvider } from "@/components/shell/hooks/use-tabs"
 
 function MainLayout({ children }: { children: React.ReactNode }) {
     
@@ -27,14 +26,12 @@ function MainLayout({ children }: { children: React.ReactNode }) {
     );
 }
 
-export function AppShell({ initialPath, children }: { initialPath: string, children: React.ReactNode }) {
+export function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <SidebarProvider>
-            <TabsProvider initialPath={initialPath}>
-                <MainLayout>
-                    {children}
-                </MainLayout>
-            </TabsProvider>
+            <MainLayout>
+                {children}
+            </MainLayout>
         </SidebarProvider>
     )
 }

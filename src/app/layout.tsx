@@ -9,6 +9,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
+import { TabsProvider } from "@/components/shell/hooks/use-tabs"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -39,9 +40,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
   
   return (
     <ActionStateProvider>
-      <AppShell initialPath={pathname}>
+      <TabsProvider>
+        <AppShell>
           {children}
-      </AppShell>
+        </AppShell>
+      </TabsProvider>
     </ActionStateProvider>
   );
 }
