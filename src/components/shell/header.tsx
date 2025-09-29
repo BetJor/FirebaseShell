@@ -25,7 +25,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
 import React from "react"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarTrigger } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/use-tabs"
 
 
