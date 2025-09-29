@@ -71,17 +71,6 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const [tabContents, setTabContents] = useState<Record<string, ReactNode>>({});
     const { user } = useAuth();
     const [lastUser, setLastUser] = useState(user?.id);
-    const router = useRouter();
-    const pathname = usePathname();
-
-    // Effect to handle navigation when activeTab changes
-    useEffect(() => {
-        const tab = tabs.find(t => t.id === activeTab);
-        if (tab && tab.path !== pathname) {
-            console.log(`[TabsProvider] Navigating to ${tab.path}`);
-            router.push(tab.path);
-        }
-    }, [activeTab, tabs, pathname, router]);
 
     const loadContent = useCallback((tabId: string, tabData: TabInput) => {
         setTabContents(prev => ({
@@ -162,7 +151,6 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
         if (nextActiveTabId) {
             setActiveTab(nextActiveTabId);
         } else if (tabs.length - 1 === 0 && initialTabs.length > 0) {
-            // If we are closing the last tab, open the initial one.
             openTab(initialTabs[0]);
         }
     }, [tabs, activeTab, initialTabs, setActiveTab, openTab]);

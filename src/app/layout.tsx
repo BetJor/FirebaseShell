@@ -20,8 +20,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   
   useEffect(() => {
-    // We get the pathname from window.location because usePathname causes re-renders
-    const currentPathname = window.location.pathname;
+    const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '';
     if (!loading && !user && !currentPathname.includes('/login')) {
       router.push(`/login`);
     }

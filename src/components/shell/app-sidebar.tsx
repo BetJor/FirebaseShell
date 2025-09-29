@@ -13,9 +13,10 @@ import { useTabs } from "@/components/shell/hooks/use-tabs"
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
   const { openTab, setActiveTab, tabs, activeTab } = useTabs();
-  const isActive = tabs.find(t => t.id === activeTab)?.path === href;
+  const pathname = usePathname();
+  const isActive = activeTab === href;
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     openTab({
       path: href,
@@ -26,13 +27,15 @@ function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React
   };
 
   return (
-    <SidebarMenuItem onClick={handleClick}>
-        <SidebarMenuButton asChild isActive={isActive}>
-            <div>
-                <Icon className="h-4 w-4" />
-                <span>{label}</span>
-            </div>
-        </SidebarMenuButton>
+    <SidebarMenuItem>
+        <a href={href} onClick={handleClick}>
+            <SidebarMenuButton asChild isActive={isActive}>
+                <div>
+                    <Icon className="h-4 w-4" />
+                    <span>{label}</span>
+                </div>
+            </SidebarMenuButton>
+        </a>
     </SidebarMenuItem>
   );
 }
