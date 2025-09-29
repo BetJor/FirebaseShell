@@ -40,20 +40,20 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   return (
-    <AppShell>
-      <TabsProvider
-        initialTabs={[
-          {
-            path: '/dashboard',
-            title: 'Panel de Control',
-            icon: Home,
-            isClosable: false,
-          },
-        ]}
-      >
+    <TabsProvider
+      initialTabs={[
+        {
+          path: '/dashboard',
+          title: 'Panel de Control',
+          icon: Home,
+          isClosable: false,
+        },
+      ]}
+    >
+      <AppShell>
         {children}
-      </TabsProvider>
-    </AppShell>
+      </AppShell>
+    </TabsProvider>
   );
 }
 
