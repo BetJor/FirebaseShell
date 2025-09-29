@@ -143,7 +143,7 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
                 setActiveTabState(initialTabs[0].path);
             }
         }
-    }, [user, tabs.length, openTab, initialTabs]);
+    }, [user, initialTabs, openTab, tabs.length]);
 
 
     useEffect(() => {
