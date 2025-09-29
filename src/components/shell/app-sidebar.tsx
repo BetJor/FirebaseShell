@@ -28,12 +28,12 @@ function SidebarNavLink({ href, icon: Icon, label, isTab }: { href: string; icon
   };
 
   return (
-    <SidebarMenuItem>
-        <SidebarMenuButton asChild isActive={isActive} onClick={handleClick}>
-            <Link href={href}>
+    <SidebarMenuItem onClick={handleClick}>
+        <SidebarMenuButton asChild isActive={isActive}>
+            <div>
                 <Icon className="h-4 w-4" />
                 <span>{label}</span>
-            </Link>
+            </div>
         </SidebarMenuButton>
     </SidebarMenuItem>
   );
