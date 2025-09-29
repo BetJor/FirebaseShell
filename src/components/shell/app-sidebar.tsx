@@ -11,20 +11,18 @@ import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, S
 import { useTabs } from "@/components/shell/hooks/use-tabs"
 
 
-function SidebarNavLink({ href, icon: Icon, label, isTab }: { href: string; icon: React.ElementType; label: string, isTab: boolean }) {
+function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
   const { openTab, setActiveTab, tabs, activeTab } = useTabs();
-  const isActive = tabs.some(t => t.path === href && t.id === activeTab);
+  const isActive = tabs.find(t => t.id === activeTab)?.path === href;
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isTab) {
-      e.preventDefault();
-      openTab({
-        path: href,
-        title: label,
-        icon: Icon,
-        isClosable: true,
-      });
-    }
+    e.preventDefault();
+    openTab({
+      path: href,
+      title: label,
+      icon: Icon,
+      isClosable: true,
+    });
   };
 
   return (
@@ -47,17 +45,17 @@ export function AppSidebar() {
   if (!user) return null;
 
   const mainNavItems = [
-    { href: `/dashboard`, icon: Home, label: "Panel de Control", isTab: true },
-    { href: `/actions`, icon: ListChecks, label: "Acciones", isTab: true },
-    { href: `/reports`, icon: BarChart3, label: "Informes", isTab: true },
+    { href: `/dashboard`, icon: Home, label: "Panel de Control" },
+    { href: `/actions`, icon: ListChecks, label: "Acciones" },
+    { href: `/reports`, icon: BarChart3, label: "Informes" },
   ]
   
   const adminSettingsNavItems = [
-    { href: `/settings`, icon: Settings, label: "Configuración", isTab: true },
-    { href: `/workflow`, icon: GanttChartSquare, label: "Workflow", isTab: true },
-    { href: `/firestore-rules`, icon: FileLock2, label: "Reglas de Firestore", isTab: true },
-    { href: `/ai-settings`, icon: Sparkles, label: "Configuración IA", isTab: true },    
-    { href: `/user-management`, icon: Users, label: "Gestión de Usuarios", isTab: true },
+    { href: `/settings`, icon: Settings, label: "Configuración" },
+    { href: `/workflow`, icon: GanttChartSquare, label: "Workflow" },
+    { href: `/firestore-rules`, icon: FileLock2, label: "Reglas de Firestore" },
+    { href: `/ai-settings`, icon: Sparkles, label: "Configuración IA" },    
+    { href: `/user-management`, icon: Users, label: "Gestión de Usuarios" },
   ]
 
 

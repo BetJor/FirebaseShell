@@ -10,13 +10,14 @@ import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
 import { TabsProvider } from "@/components/shell/hooks/use-tabs"
+import { Home } from "lucide-react"
 
 const inter = Inter({ subsets: ['latin'] })
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
   
   useEffect(() => {
     if (!loading && !user && !pathname.includes('/login')) {
@@ -39,13 +40,20 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   return (
-    <ActionStateProvider>
-      <TabsProvider>
-        <AppShell>
-          {children}
-        </AppShell>
+    <AppShell>
+      <TabsProvider
+        initialTabs={[
+          {
+            path: '/dashboard',
+            title: 'Panel de Control',
+            icon: Home,
+            isClosable: false,
+          },
+        ]}
+      >
+        {children}
       </TabsProvider>
-    </ActionStateProvider>
+    </AppShell>
   );
 }
 
@@ -58,9 +66,11 @@ export default function RootLayout({
     <html lang="es">
       <body className={inter.className}>
           <AuthProvider>
-            <AppContent>
-              {children}
-            </AppContent>
+            <ActionStateProvider>
+              <AppContent>
+                {children}
+              </AppContent>
+            </ActionStateProvider>
             <Toaster />
           </AuthProvider>
       </body>
