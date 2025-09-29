@@ -9,13 +9,14 @@ import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
-import { TabsProvider } from "@/components/shell/hooks/use-tabs";
+import { TabsProvider, useTabs } from "@/components/shell/hooks/use-tabs";
 import { Home } from "lucide-react";
 
 const inter = Inter({ subsets: ['latin'] })
 
 function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { activeTab, getTabContent } = useTabs();
   const router = useRouter();
   const pathname = usePathname();
   
@@ -39,9 +40,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return null;
   }
   
+  const contentToRender = activeTab ? getTabContent(activeTab) : children;
+  
   return (
     <AppShell>
-      {children}
+      {contentToRender}
     </AppShell>
   );
 }
