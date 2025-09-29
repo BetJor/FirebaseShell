@@ -8,7 +8,7 @@ import { getUsers, getUserById } from './users-service';
 import { getCategories, getSubcategories, getAffectedAreas, getCenters, getActionTypes, getResponsibilityRoles } from './master-data-service';
 import { getPermissionRuleForState, resolveRoles } from './permissions-service';
 import { sendStateChangeEmail } from './notification-service';
-import { seedActions } from '@/lib/actions-seed-data';
+import { initialActions } from '@/lib/actions-seed-data';
 
 interface CreateActionData extends Omit<ImprovementAction, 'id' | 'actionId' | 'status' | 'creationDate' | 'category' | 'subcategory' | 'type' | 'affectedAreas' | 'center' | 'analysisDueDate' | 'implementationDueDate' | 'closureDueDate' | 'readers' | 'authors' > {
   status: 'Borrador' | 'Pendiente Análisis';
@@ -37,13 +37,13 @@ export const getActions = async (): Promise<ImprovementAction[]> => {
             const docRefs: { [key: string]: string } = {};
     
             // 1. Generate all document references first to get their IDs
-            seedActions.forEach(action => {
+            initialActions.forEach(action => {
                 const docRef = doc(collection(db, 'actions'));
                 docRefs[action.actionId] = docRef.id;
             });
     
             // 2. Prepare all actions with correct linking
-            const actionsToCreate = seedActions.map(actionSeed => {
+            const actionsToCreate = initialActions.map(actionSeed => {
                 let finalAction = { ...actionSeed } as any; // Use 'any' for flexibility here
                 if (actionSeed.actionId === "AM-24007" && actionSeed.originalActionTitle) {
                     const originalActionId = docRefs["AM-24006"];
@@ -59,8 +59,9 @@ export const getActions = async (): Promise<ImprovementAction[]> => {
     
             // 3. Set all documents in the batch
             actionsToCreate.forEach(action => {
+                const { id, ...data } = action.data; // Exclude the ID from the data being written
                 const docRef = doc(db, 'actions', action.id);
-                batch.set(docRef, action.data);
+                batch.set(docRef, data);
             });
     
             // 4. Commit the batch
