@@ -8,6 +8,7 @@ import { useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
+import { ActionStateProvider } from "@/hooks/use-action-state"
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -37,9 +38,11 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
   
   return (
-    <AppShell initialPath={pathname}>
-        {children}
-    </AppShell>
+    <ActionStateProvider>
+      <AppShell initialPath={pathname}>
+          {children}
+      </AppShell>
+    </ActionStateProvider>
   );
 }
 
