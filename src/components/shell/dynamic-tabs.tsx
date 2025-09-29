@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { X } from "lucide-react"

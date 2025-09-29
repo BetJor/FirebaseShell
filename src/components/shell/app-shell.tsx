@@ -5,7 +5,7 @@ import { Header } from "@/components/shell/header"
 import { AppSidebar } from "@/components/shell/app-sidebar"
 import { DynamicTabs } from "@/components/shell/dynamic-tabs"
 import { SidebarProvider } from "@/components/shell/ui/sidebar"
-import { TabsProvider } from "@/components/shell/use-tabs"
+import { TabsProvider } from "@/components/shell/hooks/use-tabs"
 import { ActionStateProvider } from "@/hooks/use-action-state"
 
 function MainLayout({ children }: { children: React.ReactNode }) {

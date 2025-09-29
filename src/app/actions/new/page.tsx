@@ -9,7 +9,7 @@ import { createAction, getActionTypes, getCategories, getSubcategories, getAffec
 import { ActionForm } from "@/components/action-form"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { useActionState } from "@/hooks/use-action-state"
 
 

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/card"
 import { FilePlus, GanttChartSquare, GripVertical, Plus, Star } from "lucide-react"
 import { Button } from "./ui/button"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { getActionById, getActionTypes, getCategories, getCenters, getResponsibilityRoles, getSubcategories, getAffectedAreas } from "@/lib/data"
 import { ActionDetailsTab } from "./action-details-tab"
 import { cn } from '@/lib/utils';

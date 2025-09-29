@@ -5,7 +5,7 @@ import type { ImprovementAction } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link as LinkIcon, ExternalLink, GanttChartSquare } from "lucide-react"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { getActionById, getActionTypes, getCategories, getSubcategories, getAffectedAreas, getCenters, getResponsibilityRoles } from "@/lib/data"
 import { ActionDetailsTab } from "../action-details-tab"
 

@@ -26,7 +26,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { usePathname } from "next/navigation"
 import React from "react"
 import { SidebarTrigger } from "@/components/shell/ui/sidebar"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 
 
 const pageConfig: { [key: string]: { icon: React.ElementType, titleKey: string } } = {

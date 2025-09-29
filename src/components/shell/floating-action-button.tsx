@@ -3,7 +3,7 @@
 
 import { Button } from "@/components/ui/button"
 import { FilePlus, Plus } from "lucide-react"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function FloatingActionButton() {

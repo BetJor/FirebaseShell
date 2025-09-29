@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation"
 import { UpdateActionStatusDialog } from "./update-action-status-dialog"
 import { useFollowAction } from "@/hooks/use-follow-action"
 import { useActionState } from "@/hooks/use-action-state"
-import { useTabs } from "@/components/shell/use-tabs"
+import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { ActionStatusBadge } from "./action-status-badge"
 
 
