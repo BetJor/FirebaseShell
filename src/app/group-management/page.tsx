@@ -37,7 +37,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { checkAdminEmailEnv } from "@/services/config-service";
 
 
 export default function GroupManagementPage() {
@@ -95,22 +94,6 @@ export default function GroupManagementPage() {
        toast({ variant: "destructive", title: "Error al Importar", description: "No se han podido importar los grupos." });
     }
   };
-
-  const handleCheckEnv = async () => {
-    const exists = await checkAdminEmailEnv();
-    if (exists) {
-      toast({
-        title: "Comprovació Correcta",
-        description: "La variable d'entorn GSUITE_ADMIN_EMAIL s'ha trobat.",
-      });
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Comprovació Fallida",
-        description: "La variable d'entorn GSUITE_ADMIN_EMAIL no existeix o no està configurada.",
-      });
-    }
-  };
   
   const getUserById = (id: string) => users.find(u => u.id === id);
 
@@ -121,7 +104,7 @@ export default function GroupManagementPage() {
           <h1 className="text-3xl font-bold tracking-tight">Gestión de Grupos</h1>
           <p className="text-muted-foreground">Gestiona los grupos de Google Workspace que son relevantes para esta aplicación.</p>
         </div>
-        <Button onClick={handleCheckEnv}>
+        <Button onClick={() => setIsImportDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Importar Grupos de Google
         </Button>
