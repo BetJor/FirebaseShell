@@ -1,20 +1,30 @@
 
-
 "use client"
 
-import Link from "next/link"
-import { usePathname, useParams } from "next/navigation"
-import { Home, ListChecks, Settings, Sparkles, Library, GanttChartSquare, Users, BarChart3, TestTubeDiagonal, FileLock2 } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { cn } from "@/lib/utils"
-import { Sidebar, SidebarContent, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
+import { usePathname } from "next/navigation"
+import { Home, Settings, Package, Sparkles } from "lucide-react"
+import { useUser } from "@/hooks/use-user"
+import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/hooks/use-tabs"
+
+// Definició de les entrades del menú principal
+const mainNavItems = [
+  { href: `/dashboard`, icon: Home, label: "Dashboard" },
+  { href: `/option1`, icon: Package, label: "Opció 1" },
+  { href: `/option2`, icon: Package, label: "Opció 2" },
+];
+
+// Definició de les entrades del menú de configuració per a administradors
+const adminSettingsNavItems = [
+  { href: `/settings`, icon: Settings, label: "Configuració" },
+  { href: `/ai-settings`, icon: Sparkles, label: "Configuració IA" },
+];
 
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  const { openTab, setActiveTab, tabs, activeTab } = useTabs();
+  const { openTab } = useTabs();
   const pathname = usePathname();
-  const isActive = activeTab === href;
+  const isActive = pathname === href;
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -28,65 +38,44 @@ function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React
 
   return (
     <SidebarMenuItem>
-        <a href={href} onClick={handleClick}>
-            <SidebarMenuButton asChild isActive={isActive}>
-                <div>
-                    <Icon className="h-4 w-4" />
-                    <span>{label}</span>
-                </div>
-            </SidebarMenuButton>
-        </a>
+      <a href={href} onClick={handleClick}>
+        <SidebarMenuButton asChild isActive={isActive}>
+          <div>
+            <Icon className="h-4 w-4" />
+            <span>{label}</span>
+          </div>
+        </SidebarMenuButton>
+      </a>
     </SidebarMenuItem>
   );
 }
 
-
 export function AppSidebar() {
-  const { user, isAdmin } = useAuth(); 
+  const { user, isAdmin } = useUser();
   const { state } = useSidebar();
-  
+
   if (!user) return null;
-
-  // --- DEFINICIÓ DELS ELEMENTS DEL MENÚ PRINCIPAL ---
-  // Aquest array conté els enllaços que veuran tots els usuaris.
-  const mainNavItems = [
-    { href: `/dashboard`, icon: Home, label: "Panel de Control" },
-    { href: `/actions`, icon: ListChecks, label: "Acciones" },
-    { href: `/reports`, icon: BarChart3, label: "Informes" },
-  ]
-  
-  // --- DEFINICIÓ DELS ELEMENTS DEL MENÚ D'ADMINISTRACIÓ ---
-  // Aquest array conté els enllaços que només veuran els administradors.
-  const adminSettingsNavItems = [
-    { href: `/settings`, icon: Settings, label: "Configuración" },
-    { href: `/workflow`, icon: GanttChartSquare, label: "Workflow" },
-    { href: `/firestore-rules`, icon: FileLock2, label: "Reglas de Firestore" },
-    { href: `/ai-settings`, icon: Sparkles, label: "Configuración IA" },    
-    { href: `/user-management`, icon: Users, label: "Gestión de Usuarios" },
-  ]
-
 
   return (
     <Sidebar>
-        <SidebarContent className="pt-7">
+      <SidebarContent className="pt-7">
+        <SidebarMenu>
+          {mainNavItems.map((item) => (
+            <SidebarNavLink key={item.href} {...item} />
+          ))}
+        </SidebarMenu>
+        
+        {isAdmin && (
+          <>
+            <div className="my-4 border-t border-border -mx-2"></div>
             <SidebarMenu>
-                {mainNavItems.map((item) => (
-                    <SidebarNavLink key={item.href} {...item} />
-                ))}
+              {adminSettingsNavItems.map((item) => (
+                <SidebarNavLink key={item.href} {...item} />
+              ))}
             </SidebarMenu>
-            
-            {isAdmin && (
-                <>
-                    <div className="my-4 border-t border-border -mx-2"></div>
-                    <SidebarMenu>
-                        {adminSettingsNavItems.map((item) => (
-                            <SidebarNavLink key={item.href} {...item} />
-                        ))}
-                    </SidebarMenu>
-                </>
-            )}
-
-        </SidebarContent>
+          </>
+        )}
+      </SidebarContent>
     </Sidebar>
   )
 }

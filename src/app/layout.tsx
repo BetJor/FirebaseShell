@@ -1,8 +1,10 @@
+
 "use client";
 
 import "./globals.css"
 import { Inter } from 'next/font/google'
 import { AuthProvider, useAuth } from "@/hooks/use-auth"
+import { UserProvider } from "@/hooks/use-user";
 import { Toaster } from "@/components/shell/ui/toaster"
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
@@ -58,23 +60,25 @@ export default function RootLayout({
     <html lang="es">
       <body className={inter.className}>
           <AuthProvider>
-            <ActionStateProvider>
-               <TabsProvider
-                 initialTabs={[
-                    {
-                      path: '/dashboard',
-                      title: 'Panel de Control',
-                      icon: Home,
-                      isClosable: false,
-                    },
-                ]}
-               >
-                <AppContent>
-                    {children}
-                </AppContent>
-              </TabsProvider>
-            </ActionStateProvider>
-            <Toaster />
+            <UserProvider>
+              <ActionStateProvider>
+                <TabsProvider
+                  initialTabs={[
+                      {
+                        path: '/dashboard',
+                        title: 'Panel de Control',
+                        icon: Home,
+                        isClosable: false,
+                      },
+                  ]}
+                >
+                  <AppContent>
+                      {children}
+                  </AppContent>
+                </TabsProvider>
+              </ActionStateProvider>
+              <Toaster />
+            </UserProvider>
           </AuthProvider>
       </body>
     </html>

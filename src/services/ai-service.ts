@@ -81,4 +81,5 @@ export async function setAclEntries(entries: AclEntry[]): Promise<void> {
     await setDoc(docRef, { entries });
 }
 
+export type { AclEntry };
     

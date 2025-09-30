@@ -1,166 +1,164 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { getPrompt, updatePrompt } from "@/lib/data"
-import { useToast } from "@/components/shell/hooks/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/shell/hooks/use-toast";
+import { getPrompt, updatePrompt } from "@/services/ai-service";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-  improveWritingPrompt: z.string(),
-  analysisSuggestionPrompt: z.string(),
-  correctiveActionsPrompt: z.string(),
-})
+  improveWriting: z.string().min(10, "El prompt ha de tenir almenys 10 caràcters."),
+  analysisSuggestion: z.string().min(10, "El prompt ha de tenir almenys 10 caràcters."),
+  correctiveActions: z.string().min(10, "El prompt ha de tenir almenys 10 caràcters."),
+});
 
-type PromptId = "improveWriting" | "analysisSuggestion" | "correctiveActions";
+type AiSettingsFormValues = z.infer<typeof formSchema>;
 
 export default function AiSettingsPage() {
-  const { toast } = useToast()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-
-  const form = useForm<z.infer<typeof formSchema>>({
+  const { toast } = useToast();
+  const form = useForm<AiSettingsFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      improveWritingPrompt: "",
-      analysisSuggestionPrompt: "",
-      correctiveActionsPrompt: "",
+      improveWriting: "",
+      analysisSuggestion: "",
+      correctiveActions: "",
     },
-  })
+  });
+
+  const { formState: { isSubmitting, isLoading } } = form;
 
   useEffect(() => {
     async function loadPrompts() {
-      setIsLoading(true)
       try {
-        const [improvePrompt, analysisPrompt, correctiveActionsPrompt] = await Promise.all([
+        const [improvePrompt, analysisPrompt, correctivePrompt] = await Promise.all([
           getPrompt("improveWriting"),
           getPrompt("analysisSuggestion"),
           getPrompt("correctiveActions"),
         ]);
-        form.setValue("improveWritingPrompt", improvePrompt);
-        form.setValue("analysisSuggestionPrompt", analysisPrompt);
-        form.setValue("correctiveActionsPrompt", correctiveActionsPrompt);
+        form.reset({
+          improveWriting: improvePrompt,
+          analysisSuggestion: analysisPrompt,
+          correctiveActions: correctivePrompt,
+        });
       } catch (error) {
-        console.error("Failed to load prompts:", error)
+        console.error("Failed to load AI prompts:", error);
         toast({
           variant: "destructive",
-          title: "Error",
-          description: "No se han podido cargar los prompts.",
-        })
-      } finally {
-        setIsLoading(false)
+          title: "Error de Càrrega",
+          description: "No s'han pogut carregar els prompts de la IA des de la base de dades.",
+        });
       }
     }
-    loadPrompts()
-  }, [form, toast])
+    loadPrompts();
+  }, [form, toast]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSaving(true)
+  async function onSubmit(values: AiSettingsFormValues) {
     try {
       await Promise.all([
-        updatePrompt("improveWriting", values.improveWritingPrompt),
-        updatePrompt("analysisSuggestion", values.analysisSuggestionPrompt),
-        updatePrompt("correctiveActions", values.correctiveActionsPrompt),
+        updatePrompt("improveWriting", values.improveWriting),
+        updatePrompt("analysisSuggestion", values.analysisSuggestion),
+        updatePrompt("correctiveActions", values.correctiveActions),
       ]);
       toast({
-        title: "¡Guardado!",
-        description: "Los prompts se han guardado correctamente.",
-      })
+        title: "Configuració Desada",
+        description: "Els prompts de la IA s'han actualitzat correctament.",
+      });
+       form.reset(values);
     } catch (error) {
-      console.error("Failed to save prompts:", error)
+      console.error("Failed to save AI prompts:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "No se han podido guardar los prompts.",
-      })
-    } finally {
-      setIsSaving(false)
+        title: "Error en Desar",
+        description: "No s'han pogut desar els canvis en la configuració de la IA.",
+      });
     }
   }
 
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Configuración de la IA</CardTitle>
-        <CardDescription>Gestiona los prompts y otros parámetros de los asistentes de Inteligencia Artificial.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="flex items-center gap-2">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Cargando configuración...
+    <div className="flex flex-col gap-4">
+      <h1 className="text-3xl font-bold tracking-tight">Configuració de l'IA</h1>
+        <p className="text-muted-foreground">
+            Gestiona els prompts i altres paràmetres dels assistents d'Intel·ligència Artificial.
+        </p>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <Card>
+            <CardContent className="pt-6 space-y-6">
+              <FormField
+                control={form.control}
+                name="improveWriting"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prompt de Millora d'Observacions</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Introdueix aquí el prompt que utilitzarà l'IA per a millorar les observacions..."
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="analysisSuggestion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prompt de Suggeriment d'Anàlisi i Accions</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Introdueix el prompt per a l'assistent que suggereix anàlisis de causes i accions correctives..."
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="correctiveActions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Prompt d'Accions Correctives</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Introdueix el prompt per a l'assistent de propostes d'accions..."
+                        className="min-h-[120px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+          <div className="flex justify-end mt-4">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Desar Canvis
+            </Button>
           </div>
-        ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <FormField
-                control={form.control}
-                name="improveWritingPrompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prompt de Mejora de Observaciones</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        rows={12}
-                        placeholder="Introduce aquí el prompt que usará la IA para mejorar las observaciones..."
-                        className="resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="analysisSuggestionPrompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prompt de Análisis de Causas</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        rows={12}
-                        placeholder="Introduce el prompt para el asistente de análisis de causas..."
-                        className="resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="correctiveActionsPrompt"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Prompt de Acciones Correctivas</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        rows={12}
-                        placeholder="Introduce el prompt para el asistente de propuestas de acciones..."
-                        className="resize-y"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Guardar Cambios
-              </Button>
-            </form>
-          </Form>
-        )}
-      </CardContent>
-    </Card>
-  )
+        </form>
+      </Form>
+    </div>
+  );
 }
