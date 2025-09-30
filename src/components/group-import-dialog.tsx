@@ -17,7 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/use-auth";
-import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/ai/flows/getUserGroups";
+import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 

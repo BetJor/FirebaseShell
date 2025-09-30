@@ -1,20 +1,13 @@
 'use server';
 /**
- * @fileOverview A flow to retrieve the Google Groups for a given user email.
- * 
- * This flow currently returns mock data because the real API call was causing server timeouts.
- * To re-enable the real API call, you would need to:
- * 1. Install the 'googleapis' package: `npm install googleapis`
- * 2. Uncomment the commented-out code block.
- * 3. Ensure the Service Account has Domain-Wide Delegation enabled in the Google Workspace Admin Console.
- * 4. Set the GSUITE_ADMIN_EMAIL environment variable.
+ * @fileOverview A service for interacting with the Google Admin SDK to manage groups.
  * 
  * - getUserGroups - A function that returns the groups for a user.
  * - GetUserGroupsInput - The input type for the getUserGroups function (user email).
  * - GetUserGroupsOutput - The return type for the getUserGroups function (array of groups).
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 
@@ -35,12 +28,15 @@ export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
 // It performs a pre-check before even starting the Genkit flow.
 export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
   const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
+  
+  console.log(`[getUserGroups] Starting to fetch groups for: ${userEmail}`);
+  
   if (!adminEmail) {
       console.error("[getUserGroups] GSUITE_ADMIN_EMAIL environment variable is not set.");
       throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
   }
 
-  console.log(`[getUserGroups] Starting to fetch groups for: ${userEmail} by impersonating ${adminEmail}`);
+  console.log(`[getUserGroups] Impersonating ${adminEmail} to fetch groups for ${userEmail}.`);
 
   try {
       const auth = new google.auth.GoogleAuth({
