@@ -45,7 +45,6 @@ const getUserGroupsFlow = ai.defineFlow(
   },
   async (userEmail) => {
     
-    // --- REAL GOOGLE API IMPLEMENTATION ---
     const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
     if (!adminEmail) {
         throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
