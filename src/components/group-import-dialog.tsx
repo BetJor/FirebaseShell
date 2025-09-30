@@ -20,10 +20,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
-import { checkAdminEmailEnv } from "@/services/config-service";
+import { checkAdminEmailEnv, getAdminEmailEnv } from "@/services/config-service";
 import { cn } from "@/lib/utils";
 
-function ErrorDisplay({ error, hasAdminEmailEnv }: { error: string | null, hasAdminEmailEnv: boolean | null }) {
+function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string | null, hasAdminEmailEnv: boolean | null, adminEmail: string | null }) {
     if (!error) return null;
 
     const isConfigError = error.includes("Google Workspace") || error.includes("403");
@@ -44,7 +44,11 @@ function ErrorDisplay({ error, hasAdminEmailEnv }: { error: string | null, hasAd
                       Pas 1: Variable d'Entorn
                     </AccordionTrigger>
                     <AccordionContent>
-                      Assegura't que el fitxer `.env` (o `.env.local`) a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini de Google Workspace.
+                      {adminEmail ? (
+                        <p>Variable configurada amb el valor: <span className="font-semibold">{adminEmail}</span></p>
+                      ) : (
+                        <p>Assegura't que el fitxer `.env` (o `.env.local`) a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini de Google Workspace.</p>
+                      )}
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2">
@@ -80,11 +84,12 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasAdminEmailEnv, setHasAdminEmailEnv] = useState<boolean | null>(null);
+  const [adminEmail, setAdminEmail] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      // Always check env variable when dialog opens
       checkAdminEmailEnv().then(setHasAdminEmailEnv);
+      getAdminEmailEnv().then(setAdminEmail);
 
       if (user?.email) {
         setIsLoading(true);
@@ -134,7 +139,7 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
             </div>
           )}
           
-          <ErrorDisplay error={error} hasAdminEmailEnv={hasAdminEmailEnv} />
+          <ErrorDisplay error={error} hasAdminEmailEnv={hasAdminEmailEnv} adminEmail={adminEmail} />
           
           {!isLoading && !error && availableGroups.length === 0 && (
             <p className="text-sm text-muted-foreground text-center">No hay nuevos grupos disponibles para importar o no perteneces a ningún grupo.</p>
