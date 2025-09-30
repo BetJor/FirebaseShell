@@ -31,7 +31,7 @@ interface GroupImportDialogProps {
 function ErrorDisplay({ error }: { error: string | null }) {
     if (!error) return null;
 
-    const isConfigError = error.includes("403") || error.includes("Domain-Wide Delegation") || error.includes("GSUITE_ADMIN_EMAIL");
+    const isConfigError = error.includes("403") || error.includes("Domain-Wide Delegation") || error.includes("GSUITE_ADMIN_EMAIL") || error.includes("Google Workspace");
 
     if (isConfigError) {
         return (
@@ -39,13 +39,13 @@ function ErrorDisplay({ error }: { error: string | null }) {
                 <AlertTriangle className="h-4 w-4" />
                 <AlertTitle>Error de Configuració</AlertTitle>
                 <AlertDescription>
-                   No s'ha pogut accedir als grups de Google Workspace. Això normalment es deu a una configuració incorrecta. Si us plau, revisa els següents punts:
+                   La importació ha fallat. Això normalment es deu a una configuració incorrecta. Si us plau, revisa els següents punts:
                 </AlertDescription>
                 <Accordion type="single" collapsible className="w-full mt-4 text-xs">
                   <AccordionItem value="item-1">
                     <AccordionTrigger>Pas 1: Variable d'Entorn</AccordionTrigger>
                     <AccordionContent>
-                      Assegura't que el fitxer `.env.local` a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini.
+                      Assegura't que el fitxer `.env` (o `.env.local`) a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini de Google Workspace.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2">
@@ -57,7 +57,7 @@ function ErrorDisplay({ error }: { error: string | null }) {
                    <AccordionItem value="item-3">
                     <AccordionTrigger>Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
                     <AccordionContent>
-                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: `https://www.googleapis.com/auth/admin.directory.group.readonly`
+                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: `https://www.googleapis.com/auth/admin.directory.group.readonly`. Assegura't que l'estat sigui "Autoritzat".
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
