@@ -5,24 +5,27 @@ import { usePathname } from "next/navigation"
 import { Home, Settings, Package, Users } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
-import { useTabs } from "@/components/shell/hooks/use-tabs"
+import { useTabs, getPageComponentInfo } from "@/components/shell/hooks/use-tabs"
 import { useTranslations } from "@/hooks/use-translations";
 import Link from "next/link"
 
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  const { activeTab } = useTabs();
+  const { activeTab, setActiveTab } = useTabs();
   const isActive = activeTab === href;
 
   return (
     <SidebarMenuItem>
-      <Link href={href} passHref legacyBehavior>
-          <SidebarMenuButton asChild isActive={isActive}>
-            <a>
+      <Link href={href} onClick={(e) => {
+        e.preventDefault();
+        setActiveTab(href);
+      }}>
+        <SidebarMenuButton asChild isActive={isActive}>
+            <span>
               <Icon className="h-4 w-4" />
               <span>{label}</span>
-            </a>
-          </SidebarMenuButton>
+            </span>
+        </SidebarMenuButton>
       </Link>
     </SidebarMenuItem>
   );
