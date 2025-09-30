@@ -36,6 +36,7 @@ export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
 export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
   const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
   if (!adminEmail) {
+      console.error("[getUserGroups] GSUITE_ADMIN_EMAIL environment variable is not set.");
       throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
   }
 
