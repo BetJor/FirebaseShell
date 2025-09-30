@@ -46,10 +46,10 @@ function ErrorDisplay({ error }: { error: string | null }) {
                 </AlertDescription>
                 <Accordion type="single" collapsible className="w-full mt-4 text-xs">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger className={cn("text-foreground", hasAdminEmailEnv && "text-green-600")}>
+                    <AccordionTrigger className="text-foreground">
                       Pas 1: Variable d'Entorn
                     </AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="text-foreground">
                       {adminEmail ? (
                         <p>Variable configurada amb el valor: <span className="font-semibold">{adminEmail}</span></p>
                       ) : (
@@ -59,13 +59,13 @@ function ErrorDisplay({ error }: { error: string | null }) {
                   </AccordionItem>
                   <AccordionItem value="item-2">
                     <AccordionTrigger className="text-foreground">Pas 2: Activar l'API Admin SDK</AccordionTrigger>
-                    <AccordionContent>
+                    <AccordionContent className="text-foreground">
                       Ves a la teva consola de Google Cloud, cerca "Admin SDK API" a la llibreria d'APIs i assegura't que estigui habilitada per a aquest projecte.
                     </AccordionContent>
                   </AccordionItem>
                    <AccordionItem value="item-3">
                     <AccordionTrigger className="text-left text-foreground">Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
-                    <AccordionContent className="break-words text-foreground">
+                    <AccordionContent className="text-foreground break-words">
                         Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: <span className="block break-all">`https://www.googleapis.com/auth/admin.directory.group.readonly`</span>. Assegura't que l'estat sigui "Autoritzat".
                     </AccordionContent>
                   </AccordionItem>
