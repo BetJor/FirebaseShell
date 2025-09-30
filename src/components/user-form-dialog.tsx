@@ -34,12 +34,12 @@ import {
 import type { User } from "@/lib/types"
 
 const formSchema = z.object({
-  name: z.string().min(1, "El nom és requerit."),
-  email: z.string().email("L'adreça de correu no és vàlida."),
+  name: z.string().min(1, "El nombre es requerido."),
+  email: z.string().email("La dirección de correo no es válida."),
   role: z.enum(["Creator", "Responsible", "Director", "Committee", "Admin", "User"], {
-    required_error: "El rol és requerit.",
+    required_error: "El rol es requerido.",
   }),
-  avatar: z.string().url("La URL de l'avatar no és vàlida.").optional().or(z.literal('')),
+  avatar: z.string().url("La URL del avatar no es válida.").optional().or(z.literal('')),
 })
 
 type UserFormValues = z.infer<typeof formSchema>
@@ -88,9 +88,9 @@ export function UserFormDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{user ? "Editar Usuari" : "Crear Nou Usuari"}</DialogTitle>
+          <DialogTitle>{user ? "Editar Usuario" : "Crear Nuevo Usuario"}</DialogTitle>
           <DialogDescription>
-            {user ? "Modifica les dades de l'usuari." : "Omple les dades per a crear un nou usuari."}
+            {user ? "Modifica los datos del usuario." : "Rellena los datos para crear un nuevo usuario."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -100,9 +100,9 @@ export function UserFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
+                  <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input placeholder="p. ex., Joan Pere" {...field} />
+                    <Input placeholder="p. ej., Juan Pérez" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,9 +113,9 @@ export function UserFormDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Correu Electrònic</FormLabel>
+                  <FormLabel>Correo Electrónico</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="p. ex., joan.pere@example.com" {...field} />
+                    <Input type="email" placeholder="p. ej., juan.perez@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,7 +151,7 @@ export function UserFormDialog({
               name="avatar"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL de l'Avatar</FormLabel>
+                  <FormLabel>URL del Avatar</FormLabel>
                   <FormControl>
                     <Input placeholder="https://..." {...field} />
                   </FormControl>
@@ -161,9 +161,9 @@ export function UserFormDialog({
             />
             <DialogFooter>
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel·lar</Button>
+                <Button type="button" variant="outline">Cancelar</Button>
               </DialogClose>
-              <Button type="submit">Desar</Button>
+              <Button type="submit">Guardar</Button>
             </DialogFooter>
           </form>
         </Form>

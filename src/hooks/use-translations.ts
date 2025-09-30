@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-// Suposem que només tenim 'ca' i 'es', amb 'es' per defecte.
-type Locale = 'ca' | 'es';
+// Forcing 'es' as the default and only locale for now.
+type Locale = 'es';
 type TranslationKeys = 
   | 'Common' 
   | 'Dashboard' 

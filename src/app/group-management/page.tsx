@@ -71,7 +71,7 @@ export default function GroupManagementPage() {
 
   const handleImport = () => {
     // Aquesta funció s'implementarà en el següent pas
-    toast({ title: "Funcionalitat no implementada", description: "La importació de grups de Google s'afegirà pròximament." });
+    toast({ title: "Funcionalidad no implementada", description: "La importación de grupos de Google se añadirá próximamente." });
   }
 
   return (
