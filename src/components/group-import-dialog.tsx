@@ -23,7 +23,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./
 import { checkAdminEmailEnv, getAdminEmailEnv } from "@/services/config-service";
 import { cn } from "@/lib/utils";
 
-function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string | null, hasAdminEmailEnv: boolean | null, adminEmail: string | null }) {
+function ErrorDisplay({ error }: { error: string | null }) {
+    const [hasAdminEmailEnv, setHasAdminEmailEnv] = useState<boolean | null>(null);
+    const [adminEmail, setAdminEmail] = useState<string | null>(null);
+
+    useEffect(() => {
+        checkAdminEmailEnv().then(setHasAdminEmailEnv);
+        getAdminEmailEnv().then(setAdminEmail);
+    }, []);
+
     if (!error) return null;
 
     const isConfigError = error.includes("Google Workspace") || error.includes("403") || error.includes("GSUITE_ADMIN_EMAIL");
@@ -38,7 +46,7 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
                 </AlertDescription>
                 <Accordion type="single" collapsible className="w-full mt-4 text-xs">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-foreground">
+                    <AccordionTrigger className={cn("text-foreground", hasAdminEmailEnv && "text-green-600")}>
                       Pas 1: Variable d'Entorn
                     </AccordionTrigger>
                     <AccordionContent>
@@ -57,7 +65,7 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
                   </AccordionItem>
                    <AccordionItem value="item-3">
                     <AccordionTrigger className="text-left text-foreground">Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
-                    <AccordionContent className="break-words">
+                    <AccordionContent className="break-words text-foreground">
                         Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: <span className="block break-all">`https://www.googleapis.com/auth/admin.directory.group.readonly`</span>. Assegura't que l'estat sigui "Autoritzat".
                     </AccordionContent>
                   </AccordionItem>
@@ -89,14 +97,9 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   const [selectedGroups, setSelectedGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasAdminEmailEnv, setHasAdminEmailEnv] = useState<boolean | null>(null);
-  const [adminEmail, setAdminEmail] = useState<string | null>(null);
-
+  
   useEffect(() => {
     if (isOpen) {
-      checkAdminEmailEnv().then(setHasAdminEmailEnv);
-      getAdminEmailEnv().then(setAdminEmail);
-
       if (user?.email) {
         setIsLoading(true);
         setError(null);
@@ -145,7 +148,7 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
             </div>
           )}
           
-          <ErrorDisplay error={error} hasAdminEmailEnv={hasAdminEmailEnv} adminEmail={adminEmail} />
+          <ErrorDisplay error={error} />
           
           {!isLoading && !error && availableGroups.length === 0 && (
             <p className="text-sm text-muted-foreground text-center">No hay nuevos grupos disponibles para importar o no perteneces a ningún grupo.</p>
