@@ -14,7 +14,7 @@ import {
   signInWithRedirect,
   getRedirectResult,
 } from 'firebase/auth';
-import { getAuth } from '@/lib/firebase';
+import { useAuthService } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
 import { getUserById, updateUser, createUser } from '@/lib/data';
@@ -36,9 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
+  const auth = useAuthService();
 
   useEffect(() => {
-    const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setLoading(true);
       setUser(fbUser);
@@ -50,12 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [pathname, router]);
+  }, [auth, pathname, router]);
   
   useEffect(() => {
     const handleRedirectResult = async () => {
       try {
-        const auth = getAuth();
         const result = await getRedirectResult(auth);
         if (result) {
           // User is signed in. The onAuthStateChanged listener will handle loading the user data.
@@ -65,30 +64,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
     handleRedirectResult();
-  }, []);
+  }, [auth]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(getAuth(), provider);
+    await signInWithPopup(auth, provider);
   };
 
   const signInWithGoogleRedirect = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(getAuth(), provider);
+    await signInWithRedirect(auth, provider);
   };
 
   const signInWithEmail = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(getAuth(), email, pass);
+    await signInWithEmailAndPassword(auth, email, pass);
   };
 
   const sendPasswordReset = async (email: string) => {
-    await sendPasswordResetEmail(getAuth(), email);
+    await sendPasswordResetEmail(auth, email);
   };
 
   const logout = async () => {
     try {
       setUser(null);
-      await signOut(getAuth());
+      await signOut(auth);
       router.push(`/login`);
       
     } catch (error) {

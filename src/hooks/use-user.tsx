@@ -6,7 +6,7 @@ import { type User as FirebaseUser } from 'firebase/auth';
 import type { User } from '@/lib/types';
 import { getUserById, updateUser, createUser } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { getAuth } from '@/lib/firebase';
+import { useAuthService } from '@/lib/firebase';
 
 interface UserContextType {
   user: User | null;
@@ -27,6 +27,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isImpersonating, setIsImpersonating] = useState(false);
+  const auth = useAuthService();
 
   const loadFullUser = useCallback(async (fbUser: FirebaseUser | null) => {
     setLoading(true);
@@ -103,8 +104,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const stopImpersonating = useCallback(async () => {
     sessionStorage.removeItem(IMPERSONATION_KEY);
     setIsImpersonating(false);
-    await loadFullUser(getAuth().currentUser); 
-  }, [loadFullUser]);
+    await loadFullUser(auth.currentUser); 
+  }, [loadFullUser, auth]);
   
   const updateDashboardLayout = async (layout: string[]) => {
       if (!user) return;

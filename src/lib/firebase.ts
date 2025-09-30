@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import {
-  getAuth,
+  getAuth as getFirebaseAuth,
   type Auth,
 } from 'firebase/auth';
 import {
@@ -21,20 +21,21 @@ const firebaseConfig = {
 };
 
 // Singleton pattern to initialize and get Firebase services
-const getFirebaseApp = (): FirebaseApp => {
-  if (getApps().length === 0) {
-    return initializeApp(firebaseConfig);
+let app: FirebaseApp;
+const initFirebaseApp = (): FirebaseApp => {
+  if (!app) {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   }
-  return getApp();
+  return app;
 };
 
 let dbInstance: Firestore | null = null;
 let authInstance: Auth | null = null;
 let storageInstance: FirebaseStorage | null = null;
 
-export const getDb = (): Firestore => {
+export const useDb = (): Firestore => {
   if (!dbInstance) {
-    dbInstance = initializeFirestore(getFirebaseApp(), {
+    dbInstance = initializeFirestore(initFirebaseApp(), {
       localCache: persistentLocalCache({
         tabManager: persistentMultipleTabManager(),
       }),
@@ -43,19 +44,19 @@ export const getDb = (): Firestore => {
   return dbInstance;
 };
 
-export const getAuth = (): Auth => {
+export const useAuthService = (): Auth => {
   if (!authInstance) {
-    authInstance = getAuth(getFirebaseApp());
+    authInstance = getFirebaseAuth(initFirebaseApp());
   }
   return authInstance;
 };
 
-export const getStorage = (): FirebaseStorage => {
+export const useStorage = (): FirebaseStorage => {
   if (!storageInstance) {
-    storageInstance = getStorage(getFirebaseApp());
+    storageInstance = getStorage(initFirebaseApp());
   }
   return storageInstance;
 };
 
 // For parts of the code that might still want the raw app object
-export const firebaseApp = getFirebaseApp();
+export const firebaseApp = initFirebaseApp();

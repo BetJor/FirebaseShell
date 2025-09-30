@@ -10,13 +10,13 @@ import {
   deleteDoc,
   type Timestamp,
 } from 'firebase/firestore';
-import { getDb } from './firebase';
+import { useDb } from './firebase';
 import type { User } from './types';
 
 // Funció per obtenir un usuari per ID
 export async function getUserById(userId: string): Promise<User | null> {
   try {
-    const userRef = doc(getDb(), 'users', userId);
+    const userRef = doc(useDb(), 'users', userId);
     const userSnap = await getDoc(userRef);
 
     if (userSnap.exists()) {
@@ -49,7 +49,7 @@ export async function updateUser(
   data: Partial<Omit<User, 'id'>>
 ): Promise<void> {
   try {
-    const userRef = doc(getDb(), 'users', userId);
+    const userRef = doc(useDb(), 'users', userId);
     await updateDoc(userRef, data);
   } catch (error) {
     console.error('Error updating user:', error);
@@ -63,7 +63,7 @@ export async function createUser(
   data: Omit<User, 'id' | 'createdAt' | 'avatar'>
 ): Promise<void> {
   try {
-    const userRef = doc(getDb(), 'users', userId);
+    const userRef = doc(useDb(), 'users', userId);
     await setDoc(userRef, {
       ...data,
       createdAt: serverTimestamp(),
@@ -77,7 +77,7 @@ export async function createUser(
 
 // Funció per obtenir tots els usuaris
 export async function getUsers(): Promise<User[]> {
-  const usersCol = collection(getDb(), 'users');
+  const usersCol = collection(useDb(), 'users');
   const usersSnap = await getDocs(usersCol);
   const usersList = usersSnap.docs.map(doc => {
     const data = doc.data();
@@ -93,7 +93,7 @@ export async function getUsers(): Promise<User[]> {
 
 // Funció per afegir un usuari (per a gestió manual)
 export async function addUser(data: Omit<User, 'id'>): Promise<string> {
-  const usersCol = collection(getDb(), 'users');
+  const usersCol = collection(useDb(), 'users');
   const docRef = await addDoc(usersCol, {
     ...data,
     createdAt: serverTimestamp(),
@@ -104,6 +104,6 @@ export async function addUser(data: Omit<User, 'id'>): Promise<string> {
 
 // Funció per eliminar un usuari
 export async function deleteUser(userId: string): Promise<void> {
-  const userRef = doc(getDb(), 'users', userId);
+  const userRef = doc(useDb(), 'users', userId);
   await deleteDoc(userRef);
 }
