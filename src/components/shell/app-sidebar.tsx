@@ -1,34 +1,20 @@
 "use client"
 
-import { usePathname } from "next/navigation"
 import { Home, Settings, Package, Users } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
-import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
+import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/shell/ui/sidebar"
 import { useTabs, getPageComponentInfo } from "@/components/shell/hooks/use-tabs"
 import { useTranslations } from "@/hooks/use-translations";
 import Link from "next/link"
-
+import { usePathname } from "next/navigation"
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  const { activeTab, openTab } = useTabs();
-  const isActive = activeTab === href;
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const pageInfo = getPageComponentInfo(href);
-    if (pageInfo) {
-      openTab({
-        path: href,
-        title: pageInfo.title,
-        icon: pageInfo.icon,
-        isClosable: pageInfo.isClosable,
-      });
-    }
-  };
+  const pathname = usePathname();
+  const isActive = pathname === href;
 
   return (
     <SidebarMenuItem>
-      <Link href={href} onClick={handleClick}>
+      <Link href={href}>
         <SidebarMenuButton asChild isActive={isActive}>
             <span>
               <Icon className="h-4 w-4" />
@@ -42,7 +28,6 @@ function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React
 
 export function AppSidebar() {
   const { user, isAdmin } = useUser();
-  const { state } = useSidebar();
   const t = useTranslations("Common");
 
   if (!user) return null;
