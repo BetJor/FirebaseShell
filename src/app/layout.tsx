@@ -1,10 +1,9 @@
-
 "use client";
 
 import "./globals.css"
 import { Inter } from 'next/font/google'
-import { AuthProvider, useAuth } from "@/hooks/use-auth"
-import { UserProvider } from "@/hooks/use-user";
+import { AuthProvider } from "@/hooks/use-auth"
+import { UserProvider, useUser } from "@/hooks/use-user";
 import { Toaster } from "@/components/shell/ui/toaster"
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
@@ -16,7 +15,7 @@ import { Home } from "lucide-react";
 const inter = Inter({ subsets: ['latin'] })
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useUser(); // Changed from useAuth to useUser
   const { activeTab, getTabContent } = useTabs();
   const router = useRouter();
   const pathname = usePathname();
@@ -38,7 +37,9 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) {
-    return null;
+     // This case should ideally not be hit if the useEffect above works correctly,
+     // but it's a good fallback.
+    return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /><span>Redirigiendo al login...</span></div>;
   }
   
   const contentToRender = activeTab ? getTabContent(activeTab) : children;

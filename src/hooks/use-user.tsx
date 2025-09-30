@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
@@ -60,8 +59,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     console.log(`[UserProvider] useEffect triggered. authLoading: ${authLoading}, firebaseUser: ${firebaseUser?.uid}`);
     const initializeUser = async () => {
-      console.log('[UserProvider] initializeUser starting...');
       setLoading(true);
+      console.log('[UserProvider] initializeUser starting...');
       
       const impersonationData = sessionStorage.getItem(IMPERSONATION_KEY);
       console.log(`[UserProvider] impersonationData from sessionStorage: ${impersonationData ? 'found' : 'not found'}`);
