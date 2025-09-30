@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string | null, hasAdminEmailEnv: boolean | null, adminEmail: string | null }) {
     if (!error) return null;
 
-    const isConfigError = error.includes("Google Workspace") || error.includes("403");
+    const isConfigError = error.includes("Google Workspace") || error.includes("403") || error.includes("GSUITE_ADMIN_EMAIL");
 
     if (isConfigError) {
         return (
@@ -58,7 +58,7 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
                     </AccordionContent>
                   </AccordionItem>
                    <AccordionItem value="item-3">
-                    <AccordionTrigger>Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
+                    <AccordionTrigger className="text-left">Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
                     <AccordionContent>
                         Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: `https://www.googleapis.com/auth/admin.directory.group.readonly`. Assegura't que l'estat sigui "Autoritzat".
                     </AccordionContent>
@@ -76,6 +76,14 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
         </Alert>
     );
 }
+
+interface GroupImportDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onImport: (selectedGroups: UserGroup[]) => void;
+  existingGroups: UserGroup[];
+}
+
 
 export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }: GroupImportDialogProps) {
   const { user } = useAuth();
