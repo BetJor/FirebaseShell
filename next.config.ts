@@ -30,6 +30,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '2mb',
     },
   },
+  webpack: (config, { isServer }) => {
+    // Disabling webpack cache to resolve "incorrect header check" errors.
+    // This can happen if the cache gets corrupted.
+    config.cache = false;
+    return config;
+  },
 };
  
 export default nextConfig;
