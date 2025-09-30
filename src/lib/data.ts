@@ -136,3 +136,48 @@ export async function deleteGroup(groupId: string): Promise<void> {
     const groupRef = doc(useDb(), 'groups', groupId);
     await deleteDoc(groupRef);
 }
+
+
+// Mock functions for master data - replace with actual Firestore implementation
+const getMasterData = async (collectionName: string): Promise<any[]> => {
+    const col = collection(useDb(), collectionName);
+    const snapshot = await getDocs(col);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+};
+
+export const getActionTypes = () => getMasterData('actionTypes');
+export const getCategories = () => getMasterData('categories');
+export const getSubcategories = () => getMasterData('subcategories');
+export const getAffectedAreas = () => getMasterData('affectedAreas');
+export const getResponsibilityRoles = () => getMasterData('responsibilityRoles');
+
+export const addMasterDataItem = async (collectionName: string, data: any) => {
+    const col = collection(useDb(), collectionName);
+    await addDoc(col, data);
+};
+
+export const updateMasterDataItem = async (collectionName: string, id: string, data: any) => {
+    const itemRef = doc(useDb(), collectionName, id);
+    await updateDoc(itemRef, data);
+};
+
+export const deleteMasterDataItem = async (collectionName: string, id: string) => {
+    const itemRef = doc(useDb(), collectionName, id);
+    await deleteDoc(itemRef);
+};
+
+
+export const getActions = async (): Promise<any[]> => {
+  const col = collection(useDb(), 'improvementActions');
+  const snapshot = await getDocs(col);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
+export const getActionById = async (id: string): Promise<any> => {
+    const docRef = doc(useDb(), 'improvementActions', id);
+    const docSnap = await getDoc(docRef);
+    if(docSnap.exists()){
+        return { id: docSnap.id, ...docSnap.data() };
+    }
+    return null;
+}
