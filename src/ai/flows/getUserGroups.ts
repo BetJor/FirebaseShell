@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview A flow to retrieve the Google Groups for a given user email.
