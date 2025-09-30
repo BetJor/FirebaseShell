@@ -3,9 +3,6 @@
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import {
   Table,
@@ -19,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import type { UserGroup } from "@/lib/types";
-import { getGroups, deleteGroup } from "@/lib/data";
+import { getGroups, deleteGroup, addGroup } from "@/lib/data";
 import { useToast } from "@/components/shell/hooks/use-toast";
 import {
   AlertDialog,
@@ -32,12 +29,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { GroupImportDialog } from "@/components/group-import-dialog";
 
 export default function GroupManagementPage() {
   const { toast } = useToast();
   
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   const loadGroups = useCallback(async () => {
     setIsLoading(true);
@@ -66,10 +65,22 @@ export default function GroupManagementPage() {
       toast({ variant: "destructive", title: "Error al Eliminar", description: "No se ha podido eliminar el grupo." });
     }
   };
-
-  const handleImport = () => {
-    toast({ title: "Funcionalidad no implementada", description: "La importación de grupos de Google se añadirá próximamente." });
-  }
+  
+  const handleImportGroups = async (selectedGroups: UserGroup[]) => {
+    try {
+      const importPromises = selectedGroups.map(group => addGroup(group));
+      await Promise.all(importPromises);
+      toast({
+        title: `${selectedGroups.length} Grupo(s) Importado(s)`,
+        description: "Los grupos seleccionados se han añadido a la aplicación.",
+      });
+      await loadGroups();
+      setIsImportDialogOpen(false);
+    } catch (error) {
+       console.error("Failed to import groups:", error);
+       toast({ variant: "destructive", title: "Error al Importar", description: "No se han podido importar los grupos." });
+    }
+  };
 
   return (
     <>
@@ -78,7 +89,7 @@ export default function GroupManagementPage() {
           <h1 className="text-3xl font-bold tracking-tight">Gestión de Grupos</h1>
           <p className="text-muted-foreground">Gestiona los grupos de Google Workspace que son relevantes para esta aplicación.</p>
         </div>
-        <Button onClick={handleImport}>
+        <Button onClick={() => setIsImportDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Importar Grupos de Google
         </Button>
@@ -145,6 +156,13 @@ export default function GroupManagementPage() {
           </div>
         </CardContent>
       </Card>
+      
+      <GroupImportDialog
+        isOpen={isImportDialogOpen}
+        onClose={() => setIsImportDialogOpen(false)}
+        onImport={handleImportGroups}
+        existingGroups={groups}
+      />
     </>
   );
 }

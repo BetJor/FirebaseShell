@@ -123,6 +123,13 @@ export async function getGroups(): Promise<UserGroup[]> {
     return groupsList;
 }
 
+// Funció per afegir un grup
+export async function addGroup(data: UserGroup): Promise<void> {
+  // El ID del documento será el ID del grupo de Google
+  const groupRef = doc(useDb(), 'groups', data.id);
+  await setDoc(groupRef, data);
+}
+
 // Funció per eliminar un grup
 export async function deleteGroup(groupId: string): Promise<void> {
     const groupRef = doc(useDb(), 'groups', groupId);
