@@ -15,8 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import type { UserGroup } from "@/lib/types";
-import { getGroups, deleteGroup, addGroup } from "@/lib/data";
+import type { UserGroup, User } from "@/lib/types";
+import { getGroups, deleteGroup, addGroup, getUsers } from "@/lib/data";
 import { useToast } from "@/components/shell/hooks/use-toast";
 import {
   AlertDialog,
@@ -30,36 +30,48 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { GroupImportDialog } from "@/components/group-import-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function GroupManagementPage() {
   const { toast } = useToast();
   
   const [groups, setGroups] = useState<UserGroup[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
-  const loadGroups = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedGroups = await getGroups();
+      const [fetchedGroups, fetchedUsers] = await Promise.all([
+        getGroups(),
+        getUsers(),
+      ]);
       setGroups(fetchedGroups);
+      setUsers(fetchedUsers);
     } catch (error) {
-      console.error("Failed to load groups:", error);
-      toast({ variant: "destructive", title: "Error de Carga", description: "No se han podido cargar los grupos." });
+      console.error("Failed to load data:", error);
+      toast({ variant: "destructive", title: "Error de Carga", description: "No se han podido cargar los datos." });
     } finally {
       setIsLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    loadGroups();
-  }, [loadGroups]);
+    loadData();
+  }, [loadData]);
 
   const handleDelete = async (groupId: string) => {
     try {
       await deleteGroup(groupId);
       toast({ title: "Grupo Eliminado", description: "El grupo se ha eliminado de la lista de la aplicación." });
-      await loadGroups();
+      await loadData();
     } catch (error) {
       console.error("Failed to delete group:", error);
       toast({ variant: "destructive", title: "Error al Eliminar", description: "No se ha podido eliminar el grupo." });
@@ -74,13 +86,15 @@ export default function GroupManagementPage() {
         title: `${selectedGroups.length} Grupo(s) Importado(s)`,
         description: "Los grupos seleccionados se han añadido a la aplicación.",
       });
-      await loadGroups();
+      await loadData();
       setIsImportDialogOpen(false);
     } catch (error) {
        console.error("Failed to import groups:", error);
        toast({ variant: "destructive", title: "Error al Importar", description: "No se han podido importar los grupos." });
     }
   };
+  
+  const getUserById = (id: string) => users.find(u => u.id === id);
 
   return (
     <>
@@ -103,13 +117,14 @@ export default function GroupManagementPage() {
                   <TableHead>Nombre del Grupo</TableHead>
                   <TableHead>ID (Email del Grupo)</TableHead>
                   <TableHead>Descripción</TableHead>
+                  <TableHead>Miembros</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                     </TableCell>
                   </TableRow>
@@ -119,6 +134,28 @@ export default function GroupManagementPage() {
                       <TableCell className="font-medium">{group.name}</TableCell>
                       <TableCell className="text-muted-foreground">{group.id}</TableCell>
                       <TableCell className="text-muted-foreground">{group.description}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center -space-x-2">
+                           <TooltipProvider>
+                            {(group.userIds || []).map(userId => {
+                              const user = getUserById(userId);
+                              return user ? (
+                                <Tooltip key={user.id}>
+                                  <TooltipTrigger asChild>
+                                    <Avatar className="h-6 w-6 border-2 border-background">
+                                      <AvatarImage src={user.avatar ?? undefined} alt={user.name} />
+                                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>{user.name}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              ) : null;
+                            })}
+                          </TooltipProvider>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
@@ -146,7 +183,7 @@ export default function GroupManagementPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
+                    <TableCell colSpan={5} className="h-24 text-center">
                       No hay grupos importados. Haz clic en 'Importar' para empezar.
                     </TableCell>
                   </TableRow>
