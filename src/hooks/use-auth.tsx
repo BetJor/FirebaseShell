@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      console.log('[AuthProvider] onAuthStateChanged fired. User:', fbUser?.uid);
       setLoading(true);
       setUser(fbUser);
       setLoading(false);
@@ -57,10 +58,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
+           console.log('[AuthProvider] Handled redirect result.');
           // User is signed in. The onAuthStateChanged listener will handle loading the user data.
         }
       } catch (error) {
-        console.error("Error during sign-in redirect:", error);
+        console.error("[AuthProvider] Error during sign-in redirect:", error);
       }
     };
     handleRedirectResult();

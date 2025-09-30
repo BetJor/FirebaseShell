@@ -30,11 +30,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthService();
 
   const loadFullUser = useCallback(async (fbUser: FirebaseUser) => {
+     console.log(`[UserProvider] loadFullUser called for: ${fbUser.uid}`);
     try {
       let fullUserDetails = await getUserById(fbUser.uid);
 
       if (!fullUserDetails) {
-        console.log('User not found in DB, creating...');
+        console.log('[UserProvider] User not found in DB, creating...');
         const newUserPayload: Omit<User, 'id' | 'createdAt' | 'avatar'> = {
           name: fbUser.displayName || fbUser.email || 'Anonymous User',
           email: fbUser.email!,
@@ -51,38 +52,44 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       }
       return fullUserDetails;
     } catch (error) {
-      console.error("Failed to load user data:", error);
+      console.error("[UserProvider] Failed to load user data:", error);
       return null;
     }
   }, []);
 
   useEffect(() => {
+    console.log(`[UserProvider] useEffect triggered. authLoading: ${authLoading}, firebaseUser: ${firebaseUser?.uid}`);
     const initializeUser = async () => {
+      console.log('[UserProvider] initializeUser starting...');
       setLoading(true);
       
       const impersonationData = sessionStorage.getItem(IMPERSONATION_KEY);
+      console.log(`[UserProvider] impersonationData from sessionStorage: ${impersonationData ? 'found' : 'not found'}`);
 
       if (impersonationData && firebaseUser) {
+          console.log('[UserProvider] Entering IMPERSONATION branch.');
           const { impersonatedUser, originalUser } = JSON.parse(impersonationData);
           
-          // Verify that the currently logged-in Firebase user is the original admin.
           if (originalUser?.id === firebaseUser.uid) {
+              console.log(`[UserProvider] Impersonation valid. Setting user to ${impersonatedUser.name}`);
               setUser(impersonatedUser);
               setIsImpersonating(true);
               setLoading(false);
-              return; // Stop further processing
+              return; 
           } else {
-              // Inconsistent state, clear impersonation and proceed with normal login
+              console.warn('[UserProvider] Inconsistent impersonation state. Clearing session.');
               sessionStorage.removeItem(IMPERSONATION_KEY);
           }
       }
 
-      // No impersonation or inconsistent state, proceed with normal user loading
+      console.log('[UserProvider] Entering NORMAL user loading branch.');
       setIsImpersonating(false);
       if (firebaseUser) {
         const fullUser = await loadFullUser(firebaseUser);
+        console.log(`[UserProvider] Setting user to ${fullUser?.name}`);
         setUser(fullUser);
       } else {
+        console.log('[UserProvider] No firebaseUser. Setting user to null.');
         setUser(null);
       }
       setLoading(false);
@@ -97,6 +104,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const impersonateUser = async (userToImpersonate: User) => {
     if (user?.role === 'Admin' && firebaseUser) {
       const originalUser = user;
+      console.log(`[UserProvider] Starting impersonation. Admin: ${originalUser.name}, Target: ${userToImpersonate.name}`);
       sessionStorage.setItem(IMPERSONATION_KEY, JSON.stringify({
         impersonatedUser: userToImpersonate,
         originalUser: originalUser
@@ -105,11 +113,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       setIsImpersonating(true);
       window.location.reload(); 
     } else {
-      console.error("Only admins can impersonate users.");
+      console.error("[UserProvider] Only admins can impersonate users.");
     }
   };
 
   const stopImpersonating = useCallback(async () => {
+    console.log('[UserProvider] Stopping impersonation.');
     sessionStorage.removeItem(IMPERSONATION_KEY);
     setIsImpersonating(false);
     window.location.reload();

@@ -163,7 +163,7 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
 
     useEffect(() => {
         if (user?.id !== lastUser) {
-            console.log("[TabsProvider] User changed. Resetting tabs.");
+            console.log(`[TabsProvider] User changed. Resetting tabs. Old: ${lastUser}, New: ${user?.id}`);
             setTabs([]);
             setTabContents({});
             setActiveTabState(null);
