@@ -25,7 +25,6 @@ const GetUserGroupsOutputSchema = z.array(UserGroupSchema);
 export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
 
 // This is the main function that the frontend will call.
-// It performs a pre-check before even starting the Genkit flow.
 export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
   const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
   
@@ -41,6 +40,12 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
   try {
       const auth = new google.auth.GoogleAuth({
           scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
+          // Explicitly use the service account credentials from the environment
+          credentials: {
+              project_id: process.env.FIREBASE_PROJECT_ID,
+              client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
+              private_key: (process.env.FIREBASE_ADMIN_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+          },
           clientOptions: {
             subject: adminEmail // User to impersonate
           }
