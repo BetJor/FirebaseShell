@@ -1,4 +1,3 @@
-
 "use client"
 
 import { usePathname } from "next/navigation"
@@ -11,15 +10,25 @@ import Link from "next/link"
 
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  const { activeTab, setActiveTab } = useTabs();
+  const { activeTab, openTab } = useTabs();
   const isActive = activeTab === href;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const pageInfo = getPageComponentInfo(href);
+    if (pageInfo) {
+      openTab({
+        path: href,
+        title: pageInfo.title,
+        icon: pageInfo.icon,
+        isClosable: pageInfo.isClosable,
+      });
+    }
+  };
 
   return (
     <SidebarMenuItem>
-      <Link href={href} onClick={(e) => {
-        e.preventDefault();
-        setActiveTab(href);
-      }}>
+      <Link href={href} onClick={handleClick}>
         <SidebarMenuButton asChild isActive={isActive}>
             <span>
               <Icon className="h-4 w-4" />
@@ -40,8 +49,8 @@ export function AppSidebar() {
   
   const mainNavItems = [
     { href: `/dashboard`, icon: Home, label: t('AppSidebar.dashboard') },
-    { href: `/option1`, icon: Package, label: t('AppSidebar.option1') },
-    { href: `/option2`, icon: Package, label: t('AppSidebar.option2') },
+    { href: `/option1`, icon: Package, label: 'Opció 1' },
+    { href: `/option2`, icon: Package, label: 'Opció 2' },
   ];
 
   const adminSettingsNavItems = [

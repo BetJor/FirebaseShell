@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, lazy, Suspense } from 'react';
@@ -20,11 +19,11 @@ const pageComponentMapping: Record<string, { component: React.ComponentType<any>
   '/settings': { component: SettingsPage, title: 'Configuración', icon: Settings, isClosable: true },
   '/user-management': { component: UserManagementPage, title: 'Gestión de Usuarios', icon: Users, isClosable: true },
   '/option1': { component: Option1Page, title: 'Opción 1', icon: Package, isClosable: true },
-  '/option2': { component: Option2Page, title: 'Opción 2', icon: Package, isCachable: true },
+  '/option2': { component: Option2Page, title: 'Opción 2', icon: Package, isClosable: true },
   '/my-groups': { component: MyGroupsPage, title: 'Mis Grupos', icon: Users, isClosable: true },
 };
 
-const getPageComponentInfo = (path: string) => {
+export const getPageComponentInfo = (path: string) => {
   const cleanPath = path.split('?')[0];
   return pageComponentMapping[cleanPath];
 };
@@ -62,18 +61,17 @@ export function TabsProvider({ children, initialTabs: initialTabInputs }: { chil
 
     const setActiveTab = useCallback((tabId: string) => {
         const tab = tabs.find(t => t.id === tabId);
-        if (tab && tab.path !== pathname) {
-            router.push(tab.path, { scroll: false });
-        } else if (tab && tab.id !== activeTab) {
+        if (tab && tab.id !== activeTab) {
              setActiveTabState(tabId);
         }
-    }, [tabs, pathname, router, activeTab]);
+    }, [tabs, activeTab]);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
         
         setTabs(prevTabs => {
             if (prevTabs.find(t => t.id === tabId)) {
+                setActiveTab(tabId);
                 return prevTabs; // Tab already exists
             }
             const newTab: Tab = { ...tabData, id: tabId };
@@ -86,9 +84,10 @@ export function TabsProvider({ children, initialTabs: initialTabInputs }: { chil
                     [tabId]: PageComponent ? <PageComponent /> : <div>Component not found</div>
                 };
             });
+            setActiveTab(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, []);
+    }, [setActiveTab]);
 
     const closeTab = useCallback((tabId: string) => {
         let nextActiveTabPath: string | null = null;
@@ -113,11 +112,7 @@ export function TabsProvider({ children, initialTabs: initialTabInputs }: { chil
             delete newContents[tabId];
             return newContents;
         });
-
-        if (nextActiveTabPath) {
-            router.push(nextActiveTabPath);
-        }
-    }, [activeTab, router]);
+    }, [activeTab]);
 
     const closeCurrentTab = useCallback(() => {
         if (activeTab) {
@@ -150,12 +145,15 @@ export function TabsProvider({ children, initialTabs: initialTabInputs }: { chil
 
         if (user?.id !== lastUserId) {
             setLastUserId(user?.id);
-            setTabs([]);
-            setTabContents({});
-            setActiveTabState(null);
-            router.replace('/dashboard'); // Go to a clean state
+            // Don't reset here, let the path dictate the state
         }
-    }, [user, lastUserId, userLoading, router]);
+    }, [user, lastUserId, userLoading]);
+
+    useEffect(() => {
+        if (activeTab && pathname !== activeTab) {
+            router.push(activeTab);
+        }
+    }, [activeTab, pathname, router]);
     
     const getTabContent = useCallback((tabId: string) => {
         return (
