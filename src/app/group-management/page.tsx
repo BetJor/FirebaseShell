@@ -116,7 +116,6 @@ export default function GroupManagementPage() {
                 <TableRow>
                   <TableHead>Nombre del Grupo</TableHead>
                   <TableHead>ID (Email del Grupo)</TableHead>
-                  <TableHead>Descripción</TableHead>
                   <TableHead>Miembros</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -124,7 +123,7 @@ export default function GroupManagementPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                       <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                     </TableCell>
                   </TableRow>
@@ -133,7 +132,6 @@ export default function GroupManagementPage() {
                     <TableRow key={group.id}>
                       <TableCell className="font-medium">{group.name}</TableCell>
                       <TableCell className="text-muted-foreground">{group.id}</TableCell>
-                      <TableCell className="text-muted-foreground">{group.description}</TableCell>
                       <TableCell>
                         <div className="flex items-center -space-x-2">
                            <TooltipProvider>
@@ -183,7 +181,7 @@ export default function GroupManagementPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">
+                    <TableCell colSpan={4} className="h-24 text-center">
                       No hay grupos importados. Haz clic en 'Importar' para empezar.
                     </TableCell>
                   </TableRow>
