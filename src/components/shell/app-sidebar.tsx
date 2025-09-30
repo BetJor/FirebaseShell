@@ -7,32 +7,23 @@ import { useUser } from "@/hooks/use-user"
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/hooks/use-tabs"
 import { useTranslations } from "@/hooks/use-translations";
+import Link from "next/link"
 
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
-  const { openTab, activeTab } = useTabs();
+  const { activeTab } = useTabs();
   const isActive = activeTab === href;
-
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    openTab({
-      path: href,
-      title: label,
-      icon: Icon,
-      isClosable: true,
-    });
-  };
 
   return (
     <SidebarMenuItem>
-      <a href={href} onClick={handleClick}>
-        <SidebarMenuButton asChild isActive={isActive}>
-          <div>
-            <Icon className="h-4 w-4" />
-            <span>{label}</span>
-          </div>
-        </SidebarMenuButton>
-      </a>
+      <Link href={href} passHref legacyBehavior>
+          <SidebarMenuButton asChild isActive={isActive}>
+            <a>
+              <Icon className="h-4 w-4" />
+              <span>{label}</span>
+            </a>
+          </SidebarMenuButton>
+      </Link>
     </SidebarMenuItem>
   );
 }
