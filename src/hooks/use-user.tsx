@@ -6,7 +6,7 @@ import { type User as FirebaseUser } from 'firebase/auth';
 import type { User } from '@/lib/types';
 import { getUserById, updateUser, createUser } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { auth } from '@/lib/firebase';
+import { getAuth } from '@/lib/firebase';
 
 interface UserContextType {
   user: User | null;
@@ -49,10 +49,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
         if (!fullUserDetails) {
           console.log('User not found in DB, creating...');
-          const newUserPayload: Omit<User, 'id' | 'createdAt'> = {
+          const newUserPayload: Omit<User, 'id' | 'createdAt' | 'avatar'> = {
             name: fbUser.displayName || fbUser.email || 'Anonymous User',
             email: fbUser.email!,
-            image: fbUser.photoURL || null,
             role: 'User',
             lastLogin: new Date(),
             dashboardLayout: [],
@@ -104,7 +103,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const stopImpersonating = useCallback(async () => {
     sessionStorage.removeItem(IMPERSONATION_KEY);
     setIsImpersonating(false);
-    await loadFullUser(auth.currentUser); 
+    await loadFullUser(getAuth().currentUser); 
   }, [loadFullUser]);
   
   const updateDashboardLayout = async (layout: string[]) => {
