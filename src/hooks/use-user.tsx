@@ -29,64 +29,70 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [isImpersonating, setIsImpersonating] = useState(false);
   const auth = useAuthService();
 
-  const loadFullUser = useCallback(async (fbUser: FirebaseUser | null) => {
-    setLoading(true);
-    if (fbUser) {
-      try {
-        const impersonationData = sessionStorage.getItem(IMPERSONATION_KEY);
-        if (impersonationData) {
-          const { impersonatedUser, originalUser } = JSON.parse(impersonationData);
-          if (originalUser?.id === fbUser.uid) {
-            setUser(impersonatedUser);
-            setIsImpersonating(true);
-            setLoading(false);
-            return;
-          } else {
-            // Clean up inconsistent state
-            sessionStorage.removeItem(IMPERSONATION_KEY);
-          }
-        }
+  const loadFullUser = useCallback(async (fbUser: FirebaseUser) => {
+    try {
+      let fullUserDetails = await getUserById(fbUser.uid);
 
-        let fullUserDetails = await getUserById(fbUser.uid);
-
-        if (!fullUserDetails) {
-          console.log('User not found in DB, creating...');
-          const newUserPayload: Omit<User, 'id' | 'createdAt' | 'avatar'> = {
-            name: fbUser.displayName || fbUser.email || 'Anonymous User',
-            email: fbUser.email!,
-            role: 'User',
-            lastLogin: new Date(),
-            dashboardLayout: [],
-          };
-          await createUser(fbUser.uid, newUserPayload);
-          fullUserDetails = await getUserById(fbUser.uid);
-        } else {
-          // Update last login time
-          const updatedUser = { ...fullUserDetails, lastLogin: new Date() };
-          await updateUser(fbUser.uid, { lastLogin: updatedUser.lastLogin });
-          fullUserDetails = updatedUser;
-        }
-
-        setUser(fullUserDetails);
-        setIsImpersonating(false);
-      } catch (error) {
-        console.error("Failed to load user data:", error);
-        setUser(null);
-      } finally {
-        setLoading(false);
+      if (!fullUserDetails) {
+        console.log('User not found in DB, creating...');
+        const newUserPayload: Omit<User, 'id' | 'createdAt' | 'avatar'> = {
+          name: fbUser.displayName || fbUser.email || 'Anonymous User',
+          email: fbUser.email!,
+          role: 'User',
+          lastLogin: new Date(),
+          dashboardLayout: [],
+        };
+        await createUser(fbUser.uid, newUserPayload);
+        fullUserDetails = await getUserById(fbUser.uid);
+      } else {
+        const updatedUser = { ...fullUserDetails, lastLogin: new Date() };
+        await updateUser(fbUser.uid, { lastLogin: updatedUser.lastLogin });
+        fullUserDetails = updatedUser;
       }
-    } else {
-      setUser(null);
-      setIsImpersonating(false);
-      sessionStorage.removeItem(IMPERSONATION_KEY);
-      setLoading(false);
+      return fullUserDetails;
+    } catch (error) {
+      console.error("Failed to load user data:", error);
+      return null;
     }
-}, []);
-
+  }, []);
 
   useEffect(() => {
-    loadFullUser(firebaseUser);
-  }, [firebaseUser, loadFullUser]);
+    const initializeUser = async () => {
+      setLoading(true);
+      
+      const impersonationData = sessionStorage.getItem(IMPERSONATION_KEY);
+
+      if (impersonationData && firebaseUser) {
+          const { impersonatedUser, originalUser } = JSON.parse(impersonationData);
+          
+          // Verify that the currently logged-in Firebase user is the original admin.
+          if (originalUser?.id === firebaseUser.uid) {
+              setUser(impersonatedUser);
+              setIsImpersonating(true);
+              setLoading(false);
+              return; // Stop further processing
+          } else {
+              // Inconsistent state, clear impersonation and proceed with normal login
+              sessionStorage.removeItem(IMPERSONATION_KEY);
+          }
+      }
+
+      // No impersonation or inconsistent state, proceed with normal user loading
+      setIsImpersonating(false);
+      if (firebaseUser) {
+        const fullUser = await loadFullUser(firebaseUser);
+        setUser(fullUser);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+
+    if (!authLoading) {
+      initializeUser();
+    }
+  }, [firebaseUser, authLoading, loadFullUser]);
+
 
   const impersonateUser = async (userToImpersonate: User) => {
     if (user?.role === 'Admin' && firebaseUser) {
@@ -95,9 +101,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         impersonatedUser: userToImpersonate,
         originalUser: originalUser
       }));
-      setUser(userToImpersonate); // Immediately update state for UI responsiveness
+      setUser(userToImpersonate); 
       setIsImpersonating(true);
-      window.location.reload(); // Reload to ensure all components re-evaluate with the new user context
+      window.location.reload(); 
     } else {
       console.error("Only admins can impersonate users.");
     }
@@ -106,9 +112,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const stopImpersonating = useCallback(async () => {
     sessionStorage.removeItem(IMPERSONATION_KEY);
     setIsImpersonating(false);
-    // Reload the original user data without a full page reload
-    await loadFullUser(auth.currentUser); 
-  }, [loadFullUser, auth]);
+    window.location.reload();
+  }, []);
   
   const updateDashboardLayout = async (layout: string[]) => {
       if (!user) return;
