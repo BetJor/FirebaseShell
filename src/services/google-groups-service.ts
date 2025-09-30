@@ -38,14 +38,10 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
   console.log(`[getUserGroups] Impersonating ${adminEmail} to fetch groups for ${userEmail}.`);
 
   try {
+      // Let Google Auth library find the credentials from the environment automatically.
+      // This is the standard and most robust way to authenticate in Google Cloud environments.
       const auth = new google.auth.GoogleAuth({
           scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
-          // Explicitly use the service account credentials from the environment
-          credentials: {
-              project_id: process.env.FIREBASE_PROJECT_ID,
-              client_email: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-              private_key: (process.env.FIREBASE_ADMIN_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-          },
           clientOptions: {
             subject: adminEmail // User to impersonate
           }
