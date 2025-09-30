@@ -65,13 +65,19 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const pathname = usePathname();
 
     const setActiveTab = useCallback((tabId: string) => {
-        const tab = tabs.find(t => t.id === tabId);
-        if (tab && tab.path !== pathname) {
-            router.push(tab.path, { scroll: false });
-        }
         setActiveTabState(tabId);
-    }, [tabs, pathname, router]);
+    }, []);
 
+    // Effect to sync URL with active tab
+    useEffect(() => {
+        const activeTabData = tabs.find(t => t.id === activeTab);
+        if (activeTabData && activeTabData.path !== pathname) {
+            router.push(activeTabData.path, { scroll: false });
+        }
+    }, [activeTab, tabs, pathname, router]);
+
+
+    // Effect to sync active tab with URL
     useEffect(() => {
         const tabForPath = tabs.find(t => t.path === pathname);
         if (tabForPath && activeTab !== tabForPath.id) {
@@ -147,20 +153,22 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
         }
     }, [activeTab, closeTab]);
 
+    // This effect handles the initial tab loading and user session changes.
     useEffect(() => {
         if (user?.id !== lastUserId) {
+            // User has changed, reset everything
             setTabs([]);
             setTabContents({});
             setActiveTabState(null);
             setLastUserId(user?.id);
         } else if (tabs.length === 0 && user && !userLoading && lastUserId === user.id) {
+             // First load for a stable user session
              if (initialTabs.length > 0) {
-                // Check if the current path is already a valid tab to avoid forcing a redirect
                 const tabForPath = initialTabs.find(t => t.path === pathname) || initialTabs[0];
                 openTab(tabForPath);
             }
         }
-    }, [user?.id, lastUserId, initialTabs, openTab, tabs.length, user, userLoading, pathname]);
+    }, [user, lastUserId, initialTabs, openTab, tabs.length, userLoading, pathname]);
     
     const getTabContent = useCallback((tabId: string) => {
         return (
