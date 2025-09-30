@@ -28,6 +28,7 @@ const getPageComponent = (path: string): React.ComponentType<any> | undefined =>
   if (pageComponentMapping[cleanPath]) {
     return pageComponentMapping[cleanPath];
   }
+  // Check for dynamic routes if any in the future
   return undefined;
 };
 
@@ -66,11 +67,11 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const pathname = usePathname();
 
     const setActiveTab = useCallback((tabId: string) => {
-        setActiveTabState(tabId);
         const tab = tabs.find(t => t.id === tabId);
         if (tab && tab.path !== pathname) {
             router.push(tab.path, { scroll: false });
         }
+        setActiveTabState(tabId);
     }, [tabs, pathname, router]);
 
     useEffect(() => {
@@ -101,13 +102,17 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
                 if (PageComponent) {
                     return { ...prev, [tabId]: <PageComponent /> };
                 }
+                console.error(`[TabsProvider] No page component found for path: ${tabData.path}`);
                 return { ...prev, [tabId]: <div>Página no encontrada</div> };
             });
             
-            setActiveTab(newTab.id);
+            if (pathname !== newTab.path) {
+                router.push(newTab.path, { scroll: false });
+            }
+            setActiveTabState(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, [activeTab, setActiveTab]);
+    }, [activeTab, setActiveTab, pathname, router]);
 
     const closeTab = useCallback((tabId: string) => {
         let nextActiveTabId: string | null = null;
@@ -148,20 +153,22 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     }, [activeTab, closeTab]);
 
     useEffect(() => {
+        // This effect should only run when the user ID changes, to reset tabs.
         if (user?.id !== lastUserId) {
             setTabs([]);
             setTabContents({});
             setActiveTabState(null);
-            if (initialTabs.length > 0) {
+            if (initialTabs.length > 0 && user) {
                 openTab(initialTabs[0]);
             }
             setLastUserId(user?.id);
-        } else if (tabs.length === 0 && user) {
+        } else if (tabs.length === 0 && user && lastUserId === user.id) {
+             // This handles the initial load for a logged-in user.
              if (initialTabs.length > 0) {
                 openTab(initialTabs[0]);
             }
         }
-    }, [user?.id, lastUserId, initialTabs, openTab, tabs.length]);
+    }, [user?.id, lastUserId, initialTabs, openTab, tabs.length, user]);
     
     const getTabContent = useCallback((tabId: string) => {
         return (
