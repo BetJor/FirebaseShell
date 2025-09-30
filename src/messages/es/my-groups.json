@@ -1,0 +1,11 @@
+{
+  "MyGroups": {
+    "title": "Mis Grupos",
+    "description": "Estos son los grupos a los que perteneces.",
+    "col": {
+      "name": "Nombre del Grupo",
+      "id": "ID (Email del Grupo)"
+    },
+    "noGroups": "No perteneces a ningún grupo."
+  }
+}
