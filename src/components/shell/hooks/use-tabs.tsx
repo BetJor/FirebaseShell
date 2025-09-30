@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, lazy, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2, Home } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 
 // Dynamic imports for page components
@@ -66,40 +66,37 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const pathname = usePathname();
 
     const setActiveTab = useCallback((tabId: string) => {
-        console.log(`[TabsProvider] setActiveTab called for: ${tabId}`);
         setActiveTabState(tabId);
-    }, []);
+        const tab = tabs.find(t => t.id === tabId);
+        if (tab && tab.path !== pathname) {
+            router.push(tab.path, { scroll: false });
+        }
+    }, [tabs, pathname, router]);
 
     useEffect(() => {
-        if (activeTab) {
-            const tab = tabs.find(t => t.id === activeTab);
-            if (tab && tab.path !== pathname) {
-                 // Do not navigate, let the link click handle it.
-            }
+        const tabForPath = tabs.find(t => t.path === pathname);
+        if (tabForPath && activeTab !== tabForPath.id) {
+            setActiveTabState(tabForPath.id);
         }
-    }, [activeTab, tabs, pathname, router]);
+    }, [pathname, tabs, activeTab]);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
-        console.log(`[TabsProvider] openTab called for: ${tabId}`);
 
         setTabs(prevTabs => {
             const existingTab = prevTabs.find(t => t.id === tabId);
             if (existingTab) {
-                console.log(`[TabsProvider] Tab ${tabId} already exists. Activating it.`);
                 if (activeTab !== tabId) {
                     setActiveTab(tabId);
                 }
                 return prevTabs;
             }
 
-            console.log(`[TabsProvider] Tab ${tabId} is new. Creating and loading content.`);
             const newTab: Tab = { ...tabData, id: tabId };
             
             setTabContents(prev => {
-                if (tabData.loader) {
-                    return { ...prev, [tabId]: <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>}>{React.createElement(lazy(tabData.loader as any))}</Suspense> };
-                }
+                if (prev[tabId]) return prev;
+
                 const PageComponent = getPageComponent(tabData.path);
                 if (PageComponent) {
                     return { ...prev, [tabId]: <PageComponent /> };
@@ -113,7 +110,6 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     }, [activeTab, setActiveTab]);
 
     const closeTab = useCallback((tabId: string) => {
-        console.log(`[TabsProvider] closeTab called for: ${tabId}`);
         let nextActiveTabId: string | null = null;
         
         setTabs(prevTabs => {
@@ -124,7 +120,7 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
 
             if (activeTab === tabId) {
                 if (newTabs.length > 0) {
-                    const newIndex = index === 0 ? 0 : index - 1;
+                    const newIndex = Math.max(0, index - 1);
                     nextActiveTabId = newTabs[newIndex].id;
                 }
             }
@@ -152,34 +148,28 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     }, [activeTab, closeTab]);
 
     useEffect(() => {
-        if (user && tabs.length === 0 && initialTabs) {
-             console.log("[TabsProvider] Initializing tabs for new user session.");
-            initialTabs.forEach(tab => openTab(tab));
-            if(initialTabs.length > 0) {
-                setActiveTabState(initialTabs[0].path);
-            }
-        }
-    }, [user, initialTabs, openTab, tabs.length]);
-
-
-    useEffect(() => {
         if (user?.id !== lastUserId) {
-            console.log(`[TabsProvider] User changed. Resetting tabs. Old: ${lastUserId}, New: ${user?.id}`);
             setTabs([]);
             setTabContents({});
             setActiveTabState(null);
+            if (initialTabs.length > 0) {
+                openTab(initialTabs[0]);
+            }
             setLastUserId(user?.id);
+        } else if (tabs.length === 0 && user) {
+             if (initialTabs.length > 0) {
+                openTab(initialTabs[0]);
+            }
         }
-    }, [user?.id, lastUserId]);
+    }, [user?.id, lastUserId, initialTabs, openTab, tabs.length]);
     
     const getTabContent = useCallback((tabId: string) => {
-        console.log(`[TabsProvider] getTabContent called for: ${tabId}. Content found: ${!!tabContents[tabId]}`);
         return (
             <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
-                {tabContents[tabId] || children}
+                {tabContents[tabId] || null}
             </Suspense>
         );
-    }, [tabContents, children]);
+    }, [tabContents]);
 
     const value = {
         tabs,

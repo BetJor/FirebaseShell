@@ -15,7 +15,7 @@ import { Home } from "lucide-react";
 const inter = Inter({ subsets: ['latin'] })
 
 function AppContent({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useUser(); // Changed from useAuth to useUser
+  const { user, loading } = useUser();
   const { activeTab, getTabContent } = useTabs();
   const router = useRouter();
   const pathname = usePathname();

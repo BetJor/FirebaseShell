@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
@@ -40,7 +39,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      console.log('[AuthProvider] onAuthStateChanged fired. User:', fbUser?.uid);
       setLoading(true);
       setUser(fbUser);
       setLoading(false);
@@ -58,7 +56,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-           console.log('[AuthProvider] Handled redirect result.');
           // User is signed in. The onAuthStateChanged listener will handle loading the user data.
         }
       } catch (error) {
