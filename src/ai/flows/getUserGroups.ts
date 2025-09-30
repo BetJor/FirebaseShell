@@ -17,7 +17,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-// import { google } from 'googleapis'; // Uncomment when re-enabling real API call
+import { google } from 'googleapis'; // Uncomment when re-enabling real API call
 import type { UserGroup } from '@/lib/types';
 
 // The input is the user's email address
@@ -45,23 +45,8 @@ const getUserGroupsFlow = ai.defineFlow(
     outputSchema: GetUserGroupsOutputSchema,
   },
   async (userEmail) => {
-    console.log(`[getUserGroupsFlow] Starting to fetch MOCK groups for: ${userEmail}`);
     
-    // --- MOCK DATA IMPLEMENTATION ---
-    // This section returns hardcoded data to prevent server timeouts caused by API issues.
-    const mockGroups = [
-        { id: 'quality-assurance@example.com', name: 'Comitè de Qualitat', description: 'Grup per a la gestió de la qualitat.' },
-        { id: 'risk-committee@example.com', name: 'Comitè de Riscos', description: 'Grup per a la gestió de riscos.' },
-        { id: 'management@example.com', name: 'Direcció General', description: 'Grup de la direcció de l\'empresa.' }
-    ];
-    
-    console.log(`[getUserGroupsFlow] Successfully returned ${mockGroups.length} mock groups.`);
-    return mockGroups;
-
-    /*
-    // --- REAL GOOGLE API IMPLEMENTATION (Currently Disabled) ---
-    // To re-enable, uncomment this block, install 'googleapis', and ensure permissions are correct.
-
+    // --- REAL GOOGLE API IMPLEMENTATION ---
     const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
     if (!adminEmail) {
         throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. És necessari per a la suplantació de l'usuari administrador.");
@@ -113,6 +98,5 @@ const getUserGroupsFlow = ai.defineFlow(
         
         throw new Error("S'ha produït un error inesperat en connectar amb l'API de Google Workspace.");
     }
-    */
   }
 );
