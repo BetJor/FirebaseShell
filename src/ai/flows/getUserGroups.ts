@@ -14,7 +14,6 @@
  * - GetUserGroupsOutput - The return type for the getUserGroups function (array of groups).
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
@@ -39,65 +38,55 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
   if (!adminEmail) {
       throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
   }
-  return getUserGroupsFlow(userEmail);
-}
 
-const getUserGroupsFlow = ai.defineFlow(
-  {
-    name: 'getUserGroupsFlow',
-    inputSchema: GetUserGroupsInputSchema,
-    outputSchema: GetUserGroupsOutputSchema,
-  },
-  async (userEmail) => {
-    
-    // We can be sure adminEmail exists here because of the check in the wrapper function.
-    const adminEmail = process.env.GSUITE_ADMIN_EMAIL!;
-    
-    console.log(`[getUserGroupsFlow] Starting to fetch groups for: ${userEmail} by impersonating ${adminEmail}`);
+  console.log(`[getUserGroups] Starting to fetch groups for: ${userEmail} by impersonating ${adminEmail}`);
 
-    try {
-        const auth = new google.auth.GoogleAuth({
-            scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
-            clientOptions: {
-              subject: adminEmail // User to impersonate
-            }
-        });
-        
-        const admin = google.admin({
-            version: 'directory_v1',
-            auth: auth,
-        });
+  try {
+      const auth = new google.auth.GoogleAuth({
+          scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
+          clientOptions: {
+            subject: adminEmail // User to impersonate
+          }
+      });
+      
+      const admin = google.admin({
+          version: 'directory_v1',
+          auth: auth,
+      });
 
-        const response = await admin.groups.list({
-            userKey: userEmail,
-            maxResults: 200,
-        });
-        
-        const groups = response.data.groups;
+      const response = await admin.groups.list({
+          userKey: userEmail,
+          maxResults: 200,
+      });
+      
+      const groups = response.data.groups;
 
-        if (!groups || groups.length === 0) {
-            console.log(`[getUserGroupsFlow] No groups found for user ${userEmail}.`);
-            return [];
-        }
+      if (!groups || groups.length === 0) {
+          console.log(`[getUserGroups] No groups found for user ${userEmail}.`);
+          return [];
+      }
 
-        console.log(`[getUserGroupsFlow] Found ${groups.length} groups for ${userEmail}.`);
+      console.log(`[getUserGroups] Found ${groups.length} groups for ${userEmail}.`);
 
-        return groups.map(g => ({
+      const validatedGroups = GetUserGroupsOutputSchema.parse(
+        groups.map(g => ({
             id: g.email || g.id!,
             name: g.name || '',
             description: g.description || undefined,
-        }));
-        
-    } catch (error: any) {
-        console.error(`[getUserGroupsFlow] Detailed error object:`, JSON.stringify(error, null, 2));
+        }))
+      );
 
-        if (error.code === 403) {
-             throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
-        } else if (error.code === 404) {
-            throw new Error(`L'usuari '${userEmail}' o el domini no s'ha trobat a Google Workspace.`);
-        }
-        
-        throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
-    }
+      return validatedGroups;
+      
+  } catch (error: any) {
+      console.error(`[getUserGroups] Detailed error object:`, JSON.stringify(error, null, 2));
+
+      if (error.code === 403) {
+           throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
+      } else if (error.code === 404) {
+          throw new Error(`L'usuari '${userEmail}' o el domini no s'ha trobat a Google Workspace.`);
+      }
+      
+      throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
   }
-);
+}
