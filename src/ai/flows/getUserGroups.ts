@@ -17,7 +17,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { google } from 'googleapis'; // Uncomment when re-enabling real API call
+import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 
 // The input is the user's email address
@@ -49,7 +49,7 @@ const getUserGroupsFlow = ai.defineFlow(
     // --- REAL GOOGLE API IMPLEMENTATION ---
     const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
     if (!adminEmail) {
-        throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. És necessari per a la suplantació de l'usuari administrador.");
+        throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
     }
     
     console.log(`[getUserGroupsFlow] Starting to fetch groups for: ${userEmail} by impersonating ${adminEmail}`);
@@ -91,7 +91,7 @@ const getUserGroupsFlow = ai.defineFlow(
         console.error(`[getUserGroupsFlow] Detailed error object:`, JSON.stringify(error, null, 2));
 
         if (error.code === 403) {
-             throw new Error("Accés denegat (403 Forbidden) a l'API de Google Admin. Revisa que el Compte de Servei tingui els permisos de 'Domain-Wide Delegation' correctes a la consola d'administració de Google Workspace i que l'API d'Admin SDK estigui habilitada.");
+             throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
         } else if (error.code === 404) {
             throw new Error(`L'usuari '${userEmail}' o el domini no s'ha trobat a Google Workspace.`);
         }

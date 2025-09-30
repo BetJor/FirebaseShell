@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -11,20 +12,66 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Terminal, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Terminal } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/ai/flows/getUserGroups";
 import type { UserGroup } from "@/lib/types";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 
 interface GroupImportDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (selectedGroups: UserGroup[]) => void;
   existingGroups: UserGroup[];
+}
+
+function ErrorDisplay({ error }: { error: string | null }) {
+    if (!error) return null;
+
+    const isConfigError = error.includes("403") || error.includes("Domain-Wide Delegation") || error.includes("GSUITE_ADMIN_EMAIL");
+
+    if (isConfigError) {
+        return (
+             <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Error de Configuració</AlertTitle>
+                <AlertDescription>
+                   No s'ha pogut accedir als grups de Google Workspace. Això normalment es deu a una configuració incorrecta. Si us plau, revisa els següents punts:
+                </AlertDescription>
+                <Accordion type="single" collapsible className="w-full mt-4 text-xs">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger>Pas 1: Variable d'Entorn</AccordionTrigger>
+                    <AccordionContent>
+                      Assegura't que el fitxer `.env.local` a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger>Pas 2: Activar l'API Admin SDK</AccordionTrigger>
+                    <AccordionContent>
+                      Ves a la teva consola de Google Cloud, cerca "Admin SDK API" a la llibreria d'APIs i assegura't que estigui habilitada per a aquest projecte.
+                    </AccordionContent>
+                  </AccordionItem>
+                   <AccordionItem value="item-3">
+                    <AccordionTrigger>Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
+                    <AccordionContent>
+                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: `https://www.googleapis.com/auth/admin.directory.group.readonly`
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+            </Alert>
+        );
+    }
+
+    return (
+        <Alert variant="destructive">
+            <Terminal className="h-4 w-4" />
+            <AlertTitle>Error de Càrrega</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+        </Alert>
+    );
 }
 
 export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }: GroupImportDialogProps) {
@@ -38,15 +85,15 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
     if (isOpen && user?.email) {
       setIsLoading(true);
       setError(null);
+      setSelectedGroups([]);
       getUserGroups(user.email as GetUserGroupsInput)
         .then((groups) => {
           const existingGroupIds = new Set(existingGroups.map(g => g.id));
-          // Filtrar los grupos que ya han sido importados
           setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
         })
         .catch((err) => {
           console.error("Failed to fetch Google Groups:", err);
-          setError("No se pudieron cargar los grupos desde Google Workspace. Revisa la configuración del servidor y los permisos.");
+          setError(err.message || "No se pudieron cargar los grupos desde Google Workspace.");
         })
         .finally(() => {
           setIsLoading(false);
@@ -70,9 +117,9 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Importar Grupos de Google</DialogTitle>
+          <DialogTitle>Importar Grups de Google</DialogTitle>
           <DialogDescription>
-            Selecciona los grupos de Google Workspace que quieres hacer visibles en esta aplicación.
+            Selecciona els grups de Google Workspace que vols fer visibles en aquesta aplicació.
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
@@ -81,13 +128,9 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           )}
-          {error && (
-            <Alert variant="destructive">
-              <Terminal className="h-4 w-4" />
-              <AlertTitle>Error de Carga</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+          
+          <ErrorDisplay error={error} />
+          
           {!isLoading && !error && availableGroups.length === 0 && (
             <p className="text-sm text-muted-foreground text-center">No hay nuevos grupos disponibles para importar o no perteneces a ningún grupo.</p>
           )}
