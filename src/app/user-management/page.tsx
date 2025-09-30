@@ -34,12 +34,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { useAuth } from "@/hooks/use-auth"
+import { useUser } from "@/hooks/use-user";
 
 
 export default function UserManagementPage() {
   const { toast } = useToast();
-  const { user: currentUser, isAdmin, impersonateUser } = useAuth();
+  const { user: currentUser, isAdmin, impersonateUser } = useUser();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -101,13 +101,11 @@ export default function UserManagementPage() {
   };
   
   const handleImpersonate = (userToImpersonate: User) => {
-    if (impersonateUser) {
-        impersonateUser(userToImpersonate);
-        toast({
-          title: "Suplantación iniciada",
-          description: `Ahora estás actuando como ${userToImpersonate.name}.`,
-        });
-    }
+    impersonateUser(userToImpersonate);
+    toast({
+      title: "Suplantación iniciada",
+      description: `Ahora estás actuando como ${userToImpersonate.name}. Recargando...`,
+    });
   };
 
 

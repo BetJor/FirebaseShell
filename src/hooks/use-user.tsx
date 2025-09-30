@@ -42,6 +42,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
             return;
           } else {
+            // Clean up inconsistent state
             sessionStorage.removeItem(IMPERSONATION_KEY);
           }
         }
@@ -60,6 +61,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           await createUser(fbUser.uid, newUserPayload);
           fullUserDetails = await getUserById(fbUser.uid);
         } else {
+          // Update last login time
           const updatedUser = { ...fullUserDetails, lastLogin: new Date() };
           await updateUser(fbUser.uid, { lastLogin: updatedUser.lastLogin });
           fullUserDetails = updatedUser;
@@ -93,9 +95,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         impersonatedUser: userToImpersonate,
         originalUser: originalUser
       }));
-      setUser(userToImpersonate);
+      setUser(userToImpersonate); // Immediately update state for UI responsiveness
       setIsImpersonating(true);
-      window.location.reload(); 
+      window.location.reload(); // Reload to ensure all components re-evaluate with the new user context
     } else {
       console.error("Only admins can impersonate users.");
     }
@@ -104,6 +106,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const stopImpersonating = useCallback(async () => {
     sessionStorage.removeItem(IMPERSONATION_KEY);
     setIsImpersonating(false);
+    // Reload the original user data without a full page reload
     await loadFullUser(auth.currentUser); 
   }, [loadFullUser, auth]);
   
@@ -121,7 +124,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     <UserContext.Provider value={{ 
         user, 
         loading: loading || authLoading, 
-        isAdmin: user?.role === 'Admin',
+        isAdmin: user?.role === 'Admin' && !isImpersonating,
         isImpersonating,
         impersonateUser,
         stopImpersonating,

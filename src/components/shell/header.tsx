@@ -27,6 +27,7 @@ import { usePathname } from "next/navigation"
 import React from "react"
 import { SidebarTrigger } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/hooks/use-tabs"
+import { useUser } from "@/hooks/use-user"
 
 
 const pageConfig: { [key: string]: { icon: React.ElementType, titleKey: string } } = {
@@ -44,7 +45,8 @@ const pageConfig: { [key: string]: { icon: React.ElementType, titleKey: string }
 
 
 export function Header() {
-  const { user, logout, isImpersonating, stopImpersonating } = useAuth();
+  const { logout } = useAuth();
+  const { user, isImpersonating, stopImpersonating } = useUser();
   const { tabs, activeTab, openTab } = useTabs();
   const pathname = usePathname();
   
