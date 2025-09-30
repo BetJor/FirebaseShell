@@ -1,20 +1,25 @@
+
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, lazy, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
-import DashboardPage from '@/app/dashboard/page';
-import ActionsPage from '@/app/actions/page';
-import NewActionPage from '@/app/actions/new/page';
-import SettingsPage from '@/app/settings/page';
-import AiSettingsPage from '@/app/ai-settings/page';
-import MyGroupsPage from '@/app/my-groups/page';
-import ActionDetailPage from '@/app/actions/[id]/page';
-import UserManagementPage from '@/app/user-management/page';
-import ReportsPage from '@/app/reports/page';
-import FirestoreRulesPage from '@/app/firestore-rules/page';
-import WorkflowPage from '@/app/workflow/page';
+import { Home } from 'lucide-react';
+
+// Dynamic imports for page components
+const DashboardPage = lazy(() => import('@/app/dashboard/page'));
+const ActionsPage = lazy(() => import('@/app/actions/page'));
+const NewActionPage = lazy(() => import('@/app/actions/new/page'));
+const SettingsPage = lazy(() => import('@/app/settings/page'));
+const AiSettingsPage = lazy(() => import('@/app/ai-settings/page'));
+const MyGroupsPage = lazy(() => import('@/app/my-groups/page'));
+const ActionDetailPage = lazy(() => import('@/app/actions/[id]/page'));
+const UserManagementPage = lazy(() => import('@/app/user-management/page'));
+const ReportsPage = lazy(() => import('@/app/reports/page'));
+const FirestoreRulesPage = lazy(() => import('@/app/firestore-rules/page'));
+const WorkflowPage = lazy(() => import('@/app/workflow/page'));
+
 
 const pageComponentMapping: Record<string, React.ComponentType<any>> = {
   '/dashboard': DashboardPage,
@@ -71,34 +76,22 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const [tabContents, setTabContents] = useState<Record<string, ReactNode>>({});
     const { user } = useAuth();
     const [lastUser, setLastUser] = useState(user?.id);
-
-    const loadContent = useCallback((tabId: string, tabData: TabInput) => {
-        setTabContents(prev => ({
-            ...prev,
-            [tabId]: <div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>
-        }));
-
-        if (tabData.loader) {
-            tabData.loader().then(content => {
-                setTabContents(prev => ({ ...prev, [tabId]: content }));
-            }).catch(error => {
-                console.error(`Error loading content for tab ${tabId}:`, error);
-                setTabContents(prev => ({ ...prev, [tabId]: <div>Error al cargar el contenido.</div> }));
-            });
-        } else {
-            const PageComponent = getPageComponent(tabData.path);
-            if (PageComponent) {
-                setTabContents(prev => ({...prev, [tabId]: <PageComponent /> }));
-            } else {
-                setTabContents(prev => ({...prev, [tabId]: <div>Página no encontrada</div> }));
-            }
-        }
-    }, []);
+    const router = useRouter();
+    const pathname = usePathname();
 
     const setActiveTab = useCallback((tabId: string) => {
         console.log(`[TabsProvider] setActiveTab called for: ${tabId}`);
         setActiveTabState(tabId);
     }, []);
+
+    useEffect(() => {
+        if (activeTab) {
+            const tab = tabs.find(t => t.id === activeTab);
+            if (tab && tab.path !== pathname) {
+                 // Do not navigate, let the link click handle it.
+            }
+        }
+    }, [activeTab, tabs, pathname, router]);
 
     const openTab = useCallback((tabData: TabInput) => {
         const tabId = tabData.path;
@@ -116,12 +109,22 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
 
             console.log(`[TabsProvider] Tab ${tabId} is new. Creating and loading content.`);
             const newTab: Tab = { ...tabData, id: tabId };
-            loadContent(tabId, tabData);
+            
+            setTabContents(prev => {
+                if (tabData.loader) {
+                    return { ...prev, [tabId]: <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>}>{React.createElement(lazy(tabData.loader as any))}</Suspense> };
+                }
+                const PageComponent = getPageComponent(tabData.path);
+                if (PageComponent) {
+                    return { ...prev, [tabId]: <PageComponent /> };
+                }
+                return { ...prev, [tabId]: <div>Página no encontrada</div> };
+            });
             
             setActiveTab(newTab.id);
             return [...prevTabs, newTab];
         });
-    }, [activeTab, setActiveTab, loadContent]);
+    }, [activeTab, setActiveTab]);
 
     const closeTab = useCallback((tabId: string) => {
         console.log(`[TabsProvider] closeTab called for: ${tabId}`);
@@ -185,7 +188,11 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     
     const getTabContent = useCallback((tabId: string) => {
         console.log(`[TabsProvider] getTabContent called for: ${tabId}. Content found: ${!!tabContents[tabId]}`);
-        return tabContents[tabId] || children;
+        return (
+            <Suspense fallback={<div className="flex justify-center items-center h-full"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
+                {tabContents[tabId] || children}
+            </Suspense>
+        );
     }, [tabContents, children]);
 
     const value = {

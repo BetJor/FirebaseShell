@@ -5,7 +5,7 @@ import { Inter } from 'next/font/google'
 import { AuthProvider, useAuth } from "@/hooks/use-auth"
 import { Toaster } from "@/components/shell/ui/toaster"
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
 import { ActionStateProvider } from "@/hooks/use-action-state"
@@ -18,19 +18,19 @@ function AppContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const { activeTab, getTabContent } = useTabs();
   const router = useRouter();
+  const pathname = usePathname();
   
   useEffect(() => {
-    const currentPathname = typeof window !== 'undefined' ? window.location.pathname : '';
-    if (!loading && !user && !currentPathname.includes('/login')) {
+    if (!loading && !user && !pathname.includes('/login')) {
       router.push(`/login`);
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, pathname]);
 
   if (loading) {
     return <div className="flex h-screen w-full items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /><span>Cargando...</span></div>;
   }
   
-  const isLoginPage = typeof window !== 'undefined' && window.location.pathname.includes('/login');
+  const isLoginPage = pathname.includes('/login');
 
   if (isLoginPage) {
     return <>{children}</>;
