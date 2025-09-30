@@ -33,7 +33,12 @@ const GetUserGroupsOutputSchema = z.array(UserGroupSchema);
 export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
 
 // This is the main function that the frontend will call.
+// It performs a pre-check before even starting the Genkit flow.
 export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
+  const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
+  if (!adminEmail) {
+      throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
+  }
   return getUserGroupsFlow(userEmail);
 }
 
@@ -45,10 +50,8 @@ const getUserGroupsFlow = ai.defineFlow(
   },
   async (userEmail) => {
     
-    const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
-    if (!adminEmail) {
-        throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està configurada. Aquest valor és necessari per a la suplantació de l'usuari administrador.");
-    }
+    // We can be sure adminEmail exists here because of the check in the wrapper function.
+    const adminEmail = process.env.GSUITE_ADMIN_EMAIL!;
     
     console.log(`[getUserGroupsFlow] Starting to fetch groups for: ${userEmail} by impersonating ${adminEmail}`);
 
