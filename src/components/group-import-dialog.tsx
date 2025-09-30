@@ -58,7 +58,7 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
                    <AccordionItem value="item-3">
                     <AccordionTrigger className="text-left">Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
                     <AccordionContent className="break-words">
-                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: `https://www.googleapis.com/auth/admin.directory.group.readonly`. Assegura't que l'estat sigui "Autoritzat".
+                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: <span className="block break-all">`https://www.googleapis.com/auth/admin.directory.group.readonly`</span>. Assegura't que l'estat sigui "Autoritzat".
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
