@@ -76,7 +76,7 @@ export function Header() {
             <SidebarTrigger className="text-primary-foreground hover:text-primary-foreground/90" />
             <div className="flex items-center gap-2">
                 <GanttChartSquare className="h-7 w-7" />
-                <span className="text-lg font-semibold">Acciones de Mejora</span>
+                <span className="text-lg font-semibold">Plantilla</span>
             </div>
         </div>
 
