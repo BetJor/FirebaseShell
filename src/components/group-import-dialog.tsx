@@ -20,18 +20,13 @@ import { useAuth } from "@/hooks/use-auth";
 import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+import { checkAdminEmailEnv } from "@/services/config-service";
+import { cn } from "@/lib/utils";
 
-interface GroupImportDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onImport: (selectedGroups: UserGroup[]) => void;
-  existingGroups: UserGroup[];
-}
-
-function ErrorDisplay({ error }: { error: string | null }) {
+function ErrorDisplay({ error, hasAdminEmailEnv }: { error: string | null, hasAdminEmailEnv: boolean | null }) {
     if (!error) return null;
 
-    const isConfigError = error.includes("403") || error.includes("Domain-Wide Delegation") || error.includes("GSUITE_ADMIN_EMAIL") || error.includes("Google Workspace");
+    const isConfigError = error.includes("Google Workspace") || error.includes("403");
 
     if (isConfigError) {
         return (
@@ -43,7 +38,11 @@ function ErrorDisplay({ error }: { error: string | null }) {
                 </AlertDescription>
                 <Accordion type="single" collapsible className="w-full mt-4 text-xs">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger>Pas 1: Variable d'Entorn</AccordionTrigger>
+                    <AccordionTrigger 
+                      className={cn(hasAdminEmailEnv === true && "text-green-600")}
+                    >
+                      Pas 1: Variable d'Entorn
+                    </AccordionTrigger>
                     <AccordionContent>
                       Assegura't que el fitxer `.env` (o `.env.local`) a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini de Google Workspace.
                     </AccordionContent>
@@ -80,24 +79,30 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   const [selectedGroups, setSelectedGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasAdminEmailEnv, setHasAdminEmailEnv] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (isOpen && user?.email) {
-      setIsLoading(true);
-      setError(null);
-      setSelectedGroups([]);
-      getUserGroups(user.email as GetUserGroupsInput)
-        .then((groups) => {
-          const existingGroupIds = new Set(existingGroups.map(g => g.id));
-          setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
-        })
-        .catch((err) => {
-          console.error("Failed to fetch Google Groups:", err);
-          setError(err.message || "No se pudieron cargar los grupos desde Google Workspace.");
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    if (isOpen) {
+      // Always check env variable when dialog opens
+      checkAdminEmailEnv().then(setHasAdminEmailEnv);
+
+      if (user?.email) {
+        setIsLoading(true);
+        setError(null);
+        setSelectedGroups([]);
+        getUserGroups(user.email as GetUserGroupsInput)
+          .then((groups) => {
+            const existingGroupIds = new Set(existingGroups.map(g => g.id));
+            setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
+          })
+          .catch((err) => {
+            console.error("Failed to fetch Google Groups:", err);
+            setError(err.message || "No se pudieron cargar los grupos desde Google Workspace.");
+          })
+          .finally(() => {
+            setIsLoading(false);
+          });
+      }
     }
   }, [isOpen, user, existingGroups]);
 
@@ -129,7 +134,7 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
             </div>
           )}
           
-          <ErrorDisplay error={error} />
+          <ErrorDisplay error={error} hasAdminEmailEnv={hasAdminEmailEnv} />
           
           {!isLoading && !error && availableGroups.length === 0 && (
             <p className="text-sm text-muted-foreground text-center">No hay nuevos grupos disponibles para importar o no perteneces a ningún grupo.</p>
