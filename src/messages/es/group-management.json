@@ -1,0 +1,28 @@
+{
+  "GroupManagement": {
+    "title": "Gestión de Grupos",
+    "description": "Gestiona los grupos de Google Workspace que son relevantes para esta aplicación.",
+    "importGroups": "Importar Grupos de Google",
+    "noGroups": "No hay grupos importados. Haz clic en 'Importar' para empezar.",
+    "deleteConfirmation": "¿Estás seguro?",
+    "deleteConfirmationMessage": "Esta acción eliminará el grupo de la lista de grupos visibles en la aplicación, pero no lo borrará de Google Workspace.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "col": {
+      "name": "Nombre del Grupo",
+      "id": "ID (Email del Grupo)",
+      "description": "Descripción",
+      "actions": "Acciones"
+    },
+    "toast": {
+      "deleteSuccessTitle": "Grupo Eliminado",
+      "deleteSuccessDescription": "El grupo se ha eliminado de la lista de la aplicación."
+    },
+    "errors": {
+      "loadFailedTitle": "Error de Carga",
+      "loadFailedDescription": "No se han podido cargar los grupos.",
+      "deleteFailedTitle": "Error al Eliminar",
+      "deleteFailedDescription": "No se ha podido eliminar el grupo."
+    }
+  }
+}

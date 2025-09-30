@@ -13,6 +13,7 @@ type TranslationKeys =
   | 'Settings' 
   | 'AiSettings' 
   | 'UserManagement' 
+  | 'GroupManagement'
   | 'FirestoreRules'
   | 'Roadmap'
   | 'Backlog';

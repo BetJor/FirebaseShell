@@ -11,7 +11,7 @@ import {
   type Timestamp,
 } from 'firebase/firestore';
 import { useDb } from './firebase';
-import type { User } from './types';
+import type { User, UserGroup } from './types';
 
 // Funció per obtenir un usuari per ID
 export async function getUserById(userId: string): Promise<User | null> {
@@ -106,4 +106,25 @@ export async function addUser(data: Omit<User, 'id'>): Promise<string> {
 export async function deleteUser(userId: string): Promise<void> {
   const userRef = doc(useDb(), 'users', userId);
   await deleteDoc(userRef);
+}
+
+// Funció per obtenir tots els grups
+export async function getGroups(): Promise<UserGroup[]> {
+    const groupsCol = collection(useDb(), 'groups');
+    const groupsSnap = await getDocs(groupsCol);
+    const groupsList = groupsSnap.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            name: data.name,
+            description: data.description,
+        } as UserGroup;
+    });
+    return groupsList;
+}
+
+// Funció per eliminar un grup
+export async function deleteGroup(groupId: string): Promise<void> {
+    const groupRef = doc(useDb(), 'groups', groupId);
+    await deleteDoc(groupRef);
 }

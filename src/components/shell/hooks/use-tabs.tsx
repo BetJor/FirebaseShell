@@ -2,13 +2,14 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, lazy, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Loader2, Home, Settings, Package, Users } from 'lucide-react';
+import { Loader2, Home, Settings, Package, Users, UsersRound } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 
 // Lazy load page components
 const DashboardPage = lazy(() => import('@/app/dashboard/page'));
 const SettingsPage = lazy(() => import('@/app/settings/page'));
 const UserManagementPage = lazy(() => import('@/app/user-management/page'));
+const GroupManagementPage = lazy(() => import('@/app/group-management/page'));
 const Option1Page = lazy(() => import('@/app/option1/page'));
 const Option2Page = lazy(() => import('@/app/option2/page'));
 const MyGroupsPage = lazy(() => import('@/app/my-groups/page'));
@@ -18,6 +19,7 @@ const pageComponentMapping: Record<string, { component: React.ComponentType<any>
   '/dashboard': { component: DashboardPage, title: 'Panel de Control', icon: Home, isClosable: false },
   '/settings': { component: SettingsPage, title: 'Configuración', icon: Settings, isClosable: true },
   '/user-management': { component: UserManagementPage, title: 'Gestión de Usuarios', icon: Users, isClosable: true },
+  '/group-management': { component: GroupManagementPage, title: 'Gestión de Grupos', icon: UsersRound, isClosable: true },
   '/option1': { component: Option1Page, title: 'Opción 1', icon: Package, isClosable: true },
   '/option2': { component: Option2Page, title: 'Opción 2', icon: Package, isClosable: true },
   '/my-groups': { component: MyGroupsPage, title: 'Mis Grupos', icon: Users, isClosable: true },
@@ -70,21 +72,21 @@ export function TabsProvider({ children, initialTabs: initialTabInputs }: { chil
     }, [user, lastUserId]);
 
     useEffect(() => {
-      if (userLoading) return; // Wait until user is fully loaded
+      if (userLoading) return;
 
       if (!pathname || pathname === '/') {
         router.replace('/dashboard');
         return;
       }
-
+      
+      const pageInfo = getPageComponentInfo(pathname);
       const existingTab = tabs.find(t => t.path === pathname);
-
+      
       if (existingTab) {
           if (activeTab !== pathname) {
               setActiveTabState(pathname);
           }
       } else {
-          const pageInfo = getPageComponentInfo(pathname);
           if (pageInfo) {
               const newTab: Tab = {
                   id: pathname,

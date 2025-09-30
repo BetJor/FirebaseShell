@@ -1,6 +1,6 @@
 "use client"
 
-import { Home, Settings, Package, Users } from "lucide-react"
+import { Home, Settings, Package, Users, UsersRound } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/shell/ui/sidebar"
 import { useTabs, getPageComponentInfo } from "@/components/shell/hooks/use-tabs"
@@ -41,6 +41,7 @@ export function AppSidebar() {
   const adminSettingsNavItems = [
     { href: `/settings`, icon: Settings, label: t('AppSidebar.settings') },
     { href: `/user-management`, icon: Users, label: t('AppSidebar.userManagement') },
+    { href: `/group-management`, icon: UsersRound, label: t('AppSidebar.groupManagement') },
   ];
 
 

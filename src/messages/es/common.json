@@ -16,7 +16,8 @@
       "option1": "Opción 1",
       "option2": "Opción 2",
       "settings": "Configuración",
-      "userManagement": "Gestión de Usuarios"
+      "userManagement": "Gestión de Usuarios",
+      "groupManagement": "Gestión de Grupos"
     },
     "RootLayout": {
       "title": "Gestor de Acciones de Mejora",

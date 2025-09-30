@@ -16,7 +16,8 @@
       "option1": "Opció 1",
       "option2": "Opció 2",
       "settings": "Configuració",
-      "userManagement": "Gestió d'Usuaris"
+      "userManagement": "Gestió d'Usuaris",
+      "groupManagement": "Gestió de Grups"
     },
     "RootLayout": {
       "title": "Gestor d'Accions de Millora",
