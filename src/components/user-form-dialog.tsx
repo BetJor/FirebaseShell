@@ -36,7 +36,7 @@ import type { User } from "@/lib/types"
 const formSchema = z.object({
   name: z.string().min(1, "El nom és requerit."),
   email: z.string().email("L'adreça de correu no és vàlida."),
-  role: z.enum(["Creator", "Responsible", "Director", "Committee", "Admin"], {
+  role: z.enum(["Creator", "Responsible", "Director", "Committee", "Admin", "User"], {
     required_error: "El rol és requerit.",
   }),
   avatar: z.string().url("La URL de l'avatar no és vàlida.").optional().or(z.literal('')),
@@ -62,7 +62,7 @@ export function UserFormDialog({
     defaultValues: {
       name: "",
       email: "",
-      role: undefined,
+      role: "User",
       avatar: "",
     },
   })
@@ -74,7 +74,7 @@ export function UserFormDialog({
       form.reset({
         name: "",
         email: "",
-        role: undefined,
+        role: "User",
         avatar: "",
       })
     }
@@ -134,6 +134,7 @@ export function UserFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      <SelectItem value="User">User</SelectItem>
                       <SelectItem value="Creator">Creator</SelectItem>
                       <SelectItem value="Responsible">Responsible</SelectItem>
                       <SelectItem value="Director">Director</SelectItem>

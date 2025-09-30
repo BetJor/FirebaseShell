@@ -1,0 +1,14 @@
+{
+  "UserManagement": {
+    "title": "Gestión de Usuarios",
+    "description": "Administra los usuarios de la aplicación, asigna roles y gestiona permisos.",
+    "addNewUser": "Añadir Nuevo Usuario",
+    "col": {
+      "avatar": "Avatar",
+      "name": "Nombre",
+      "email": "Correo Electrónico",
+      "role": "Rol",
+      "actions": "Acciones"
+    }
+  }
+}

@@ -2,23 +2,11 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { Home, Settings, Package, Users, FileLock2 } from "lucide-react"
+import { Home, Settings, Package, Users } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/hooks/use-tabs"
-
-// Definició de les entrades del menú principal
-const mainNavItems = [
-  { href: `/dashboard`, icon: Home, label: "Dashboard" },
-  { href: `/option1`, icon: Package, label: "Opció 1" },
-  { href: `/option2`, icon: Package, label: "Opció 2" },
-];
-
-// Definició de les entrades del menú de configuració per a administradors
-const adminSettingsNavItems = [
-  { href: `/settings`, icon: Settings, label: "Configuració" },
-  { href: `/user-management`, icon: Users, label: "Gestió d'Usuaris" },
-];
+import { useTranslations } from "@/hooks/use-translations";
 
 
 function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) {
@@ -52,8 +40,21 @@ function SidebarNavLink({ href, icon: Icon, label }: { href: string; icon: React
 export function AppSidebar() {
   const { user, isAdmin } = useUser();
   const { state } = useSidebar();
+  const t = useTranslations("Common");
 
   if (!user) return null;
+  
+  const mainNavItems = [
+    { href: `/dashboard`, icon: Home, label: t('AppSidebar.dashboard') },
+    { href: `/option1`, icon: Package, label: t('AppSidebar.option1') },
+    { href: `/option2`, icon: Package, label: t('AppSidebar.option2') },
+  ];
+
+  const adminSettingsNavItems = [
+    { href: `/settings`, icon: Settings, label: t('AppSidebar.settings') },
+    { href: `/user-management`, icon: Users, label: t('AppSidebar.userManagement') },
+  ];
+
 
   return (
     <Sidebar>

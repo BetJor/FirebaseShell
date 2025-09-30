@@ -1,0 +1,14 @@
+{
+  "UserManagement": {
+    "title": "Gestió d'Usuaris",
+    "description": "Administra els usuaris de l'aplicació, assigna rols i gestiona permisos.",
+    "addNewUser": "Afegir Nou Usuari",
+    "col": {
+      "avatar": "Avatar",
+      "name": "Nom",
+      "email": "Correu Electrònic",
+      "role": "Rol",
+      "actions": "Accions"
+    }
+  }
+}
