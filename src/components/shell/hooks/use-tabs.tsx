@@ -1,11 +1,9 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback, lazy, Suspense } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
-import { Home } from 'lucide-react';
+import { Loader2, Home } from 'lucide-react';
+import { useUser } from '@/hooks/use-user';
 
 // Dynamic imports for page components
 const DashboardPage = lazy(() => import('@/app/dashboard/page'));
@@ -13,6 +11,8 @@ const SettingsPage = lazy(() => import('@/app/settings/page'));
 const UserManagementPage = lazy(() => import('@/app/user-management/page'));
 const Option1Page = lazy(() => import('@/app/option1/page'));
 const Option2Page = lazy(() => import('@/app/option2/page'));
+const MyGroupsPage = lazy(() => import('@/app/my-groups/page'));
+
 
 const pageComponentMapping: Record<string, React.ComponentType<any>> = {
   '/dashboard': DashboardPage,
@@ -20,6 +20,7 @@ const pageComponentMapping: Record<string, React.ComponentType<any>> = {
   '/user-management': UserManagementPage,
   '/option1': Option1Page,
   '/option2': Option2Page,
+  '/my-groups': MyGroupsPage,
 };
 
 const getPageComponent = (path: string): React.ComponentType<any> | undefined => {
@@ -59,8 +60,8 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
     const [tabs, setTabs] = useState<Tab[]>([]);
     const [activeTab, setActiveTabState] = useState<string | null>(null);
     const [tabContents, setTabContents] = useState<Record<string, ReactNode>>({});
-    const { user } = useAuth();
-    const [lastUser, setLastUser] = useState(user?.id);
+    const { user } = useUser();
+    const [lastUserId, setLastUserId] = useState<string | undefined | null>(null);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -162,14 +163,14 @@ export function TabsProvider({ children, initialTabs }: { children: ReactNode, i
 
 
     useEffect(() => {
-        if (user?.id !== lastUser) {
-            console.log(`[TabsProvider] User changed. Resetting tabs. Old: ${lastUser}, New: ${user?.id}`);
+        if (user?.id !== lastUserId) {
+            console.log(`[TabsProvider] User changed. Resetting tabs. Old: ${lastUserId}, New: ${user?.id}`);
             setTabs([]);
             setTabContents({});
             setActiveTabState(null);
-            setLastUser(user?.id);
+            setLastUserId(user?.id);
         }
-    }, [user, lastUser]);
+    }, [user?.id, lastUserId]);
     
     const getTabContent = useCallback((tabId: string) => {
         console.log(`[TabsProvider] getTabContent called for: ${tabId}. Content found: ${!!tabContents[tabId]}`);
