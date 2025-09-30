@@ -101,11 +101,13 @@ export default function UserManagementPage() {
   };
   
   const handleImpersonate = (userToImpersonate: User) => {
-    impersonateUser(userToImpersonate);
-    toast({
-      title: "Suplantación iniciada",
-      description: `Ahora estás actuando como ${userToImpersonate.name}.`,
-    });
+    if (impersonateUser) {
+        impersonateUser(userToImpersonate);
+        toast({
+          title: "Suplantación iniciada",
+          description: `Ahora estás actuando como ${userToImpersonate.name}.`,
+        });
+    }
   };
 
 
@@ -146,7 +148,7 @@ export default function UserManagementPage() {
                     <TableRow key={user.id}>
                         <TableCell>
                             <Avatar>
-                                <AvatarImage src={user.avatar} alt={user.name} />
+                                {user.avatar && <AvatarImage src={user.avatar} alt={user.name} />}
                                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                         </TableCell>

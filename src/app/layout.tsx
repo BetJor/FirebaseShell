@@ -10,7 +10,6 @@ import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Loader2 } from "lucide-react"
 import { AppShell } from "@/components/shell/app-shell"
-import { ActionStateProvider } from "@/hooks/use-action-state"
 import { TabsProvider, useTabs } from "@/components/shell/hooks/use-tabs";
 import { Home } from "lucide-react";
 
@@ -61,7 +60,6 @@ export default function RootLayout({
       <body className={inter.className}>
           <AuthProvider>
             <UserProvider>
-              <ActionStateProvider>
                 <TabsProvider
                   initialTabs={[
                       {
@@ -76,7 +74,6 @@ export default function RootLayout({
                       {children}
                   </AppContent>
                 </TabsProvider>
-              </ActionStateProvider>
               <Toaster />
             </UserProvider>
           </AuthProvider>

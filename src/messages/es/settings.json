@@ -2,23 +2,6 @@
 {
   "Settings": {
     "title": "Configuración",
-    "description": "Aquí podrás gestionar las tablas maestras de la aplicación, como categorías, tipos de acción, etc.",
-    "tabs": {
-      "categories": "Categorías",
-      "subcategories": "Subcategorías",
-      "affectedAreas": "Áreas Afectadas"
-    },
-    "col": {
-      "name": "Nombre",
-      "category": "Categoría",
-      "actions": "Acciones"
-    },
-    "addNew": "Añadir Nuevo",
-    "edit": "Editar",
-    "delete": "Eliminar",
-    "deleteConfirmation": "¿Estás seguro?",
-    "deleteConfirmationMessage": "Esta acción no se puede deshacer. Esto eliminará permanentemente el elemento.",
-    "cancel": "Cancelar",
-    "continue": "Continuar"
+    "description": "Aquí podrás gestionar la configuración general de la aplicación."
   }
 }

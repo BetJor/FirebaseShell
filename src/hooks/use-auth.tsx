@@ -17,7 +17,7 @@ import {
 import { auth, firebaseApp } from '@/lib/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import type { User } from '@/lib/types';
-import { getUserById, updateUser } from '@/lib/data';
+import { getUserById, updateUser, createUser } from '@/lib/data';
 
 interface AuthContextType {
   user: User | null;
@@ -62,7 +62,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
         }
         
-        const fullUserDetails = await getUserById(fbUser.uid);
+        let fullUserDetails = await getUserById(fbUser.uid);
+        if (!fullUserDetails) {
+            console.log(`User ${fbUser.uid} not found in DB, creating...`);
+            const newUserPayload: Omit<User, 'id' | 'createdAt'> = {
+                name: fbUser.displayName || fbUser.email || 'Anonymous User',
+                email: fbUser.email!,
+                role: 'User', // Default role for new users
+                lastLogin: new Date(),
+                dashboardLayout: [],
+            };
+            await createUser(fbUser.uid, newUserPayload);
+            fullUserDetails = await getUserById(fbUser.uid);
+        }
+
         setUser(fullUserDetails);
         setFirebaseUser(fbUser);
         setIsImpersonating(false);

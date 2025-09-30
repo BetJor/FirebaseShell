@@ -13,14 +13,10 @@
       "title": "Acciones de Mejora",
       "toggleNotifications": "Activar/desactivar notificaciones",
       "dashboard": "Panel de Control",
-      "actions": "Acciones",
-      "reports": "Informes",
-      "myGroups": "Mis Grupos",
+      "option1": "Opción 1",
+      "option2": "Opción 2",
       "settings": "Configuración",
-      "workflow": "Workflow",
-      "aiSettings": "Configuración IA",
-      "userManagement": "Gestión de Usuarios",
-      "firestoreRules": "Reglas de Firestore"
+      "userManagement": "Gestión de Usuarios"
     },
     "RootLayout": {
       "title": "Gestor de Acciones de Mejora",

@@ -13,14 +13,10 @@
       "title": "Accions de Millora",
       "toggleNotifications": "Activar/desactivar notificacions",
       "dashboard": "Panell de Control",
-      "actions": "Accions",
-      "reports": "Informes",
-      "myGroups": "Els Meus Grups",
+      "option1": "Opció 1",
+      "option2": "Opció 2",
       "settings": "Configuració",
-      "workflow": "Workflow",
-      "aiSettings": "Configuració IA",
-      "userManagement": "Gestió d'Usuaris",
-      "firestoreRules": "Regles de Firestore"
+      "userManagement": "Gestió d'Usuaris"
     },
     "RootLayout": {
       "title": "Gestor d'Accions de Millora",

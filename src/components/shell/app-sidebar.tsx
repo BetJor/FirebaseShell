@@ -2,7 +2,7 @@
 "use client"
 
 import { usePathname } from "next/navigation"
-import { Home, Settings, Package, Sparkles, GitMerge, Users, FileLock2 } from "lucide-react"
+import { Home, Settings, Package, Users, FileLock2 } from "lucide-react"
 import { useUser } from "@/hooks/use-user"
 import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, useSidebar } from "@/components/shell/ui/sidebar"
 import { useTabs } from "@/components/shell/hooks/use-tabs"
@@ -17,10 +17,7 @@ const mainNavItems = [
 // Definició de les entrades del menú de configuració per a administradors
 const adminSettingsNavItems = [
   { href: `/settings`, icon: Settings, label: "Configuració" },
-  { href: `/workflow`, icon: GitMerge, label: "Workflow" },
   { href: `/user-management`, icon: Users, label: "Gestió d'Usuaris" },
-  { href: `/ai-settings`, icon: Sparkles, label: "Configuració IA" },
-  { href: `/firestore-rules`, icon: FileLock2, label: "Regles de Firestore" },
 ];
 
 

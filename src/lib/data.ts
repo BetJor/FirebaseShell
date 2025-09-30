@@ -16,7 +16,7 @@ export async function getUserById(userId: string): Promise<User | null> {
         id: userSnap.id,
         name: userData.name,
         email: userData.email,
-        image: userData.image,
+        avatar: userData.image,
         role: userData.role || 'User', // Assumeix rol 'User' si no està definit
         createdAt: (userData.createdAt as Timestamp)?.toDate(),
         lastLogin: (userData.lastLogin as Timestamp)?.toDate(),
@@ -45,7 +45,7 @@ export async function updateUser(userId: string, data: Partial<User>): Promise<v
 }
 
 // Funció per crear un usuari (pot ser útil per al primer login)
-export async function createUser(userId: string, data: Omit<User, 'id' | 'createdAt'>): Promise<void> {
+export async function createUser(userId: string, data: Omit<User, 'id' | 'createdAt' | 'avatar'>): Promise<void> {
   try {
     const userRef = doc(db, "users", userId);
     await setDoc(userRef, {
@@ -57,4 +57,38 @@ export async function createUser(userId: string, data: Omit<User, 'id' | 'create
     console.error("Error creating user:", error);
     throw new Error("Could not create user.");
   }
+}
+
+// Funció per obtenir tots els usuaris
+export async function getUsers(): Promise<User[]> {
+    const usersCol = collection(db, "users");
+    const usersSnap = await getDocs(usersCol);
+    const usersList = usersSnap.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: (data.createdAt as Timestamp)?.toDate(),
+            lastLogin: (data.lastLogin as Timestamp)?.toDate(),
+        } as User;
+    });
+    return usersList;
+}
+
+// Funció per afegir un usuari (per a gestió manual)
+export async function addUser(data: Omit<User, 'id'>): Promise<string> {
+    const usersCol = collection(db, "users");
+    const docRef = await addDoc(usersCol, {
+        ...data,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+    });
+    return docRef.id;
+}
+
+
+// Funció per eliminar un usuari
+export async function deleteUser(userId: string): Promise<void> {
+    const userRef = doc(db, "users", userId);
+    await deleteDoc(userRef);
 }

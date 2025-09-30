@@ -2,23 +2,6 @@
 {
   "Settings": {
     "title": "Configuració",
-    "description": "Aquí podràs gestionar les taules mestres de l'aplicació, com ara categories, tipus d'acció, etc.",
-    "tabs": {
-      "categories": "Categories",
-      "subcategories": "Subcategories",
-      "affectedAreas": "Àrees Afectades"
-    },
-    "col": {
-      "name": "Nom",
-      "category": "Categoria",
-      "actions": "Accions"
-    },
-    "addNew": "Afegeix Nou",
-    "edit": "Editar",
-    "delete": "Esborrar",
-    "deleteConfirmation": "Estàs segur?",
-    "deleteConfirmationMessage": "Aquesta acció no es pot desfer. Això eliminarà permanentment l'element.",
-    "cancel": "Cancel·lar",
-    "continue": "Continuar"
+    "description": "Aquí podràs gestionar la configuració general de l'aplicació."
   }
 }

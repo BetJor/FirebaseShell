@@ -10,24 +10,14 @@ import { Home } from 'lucide-react';
 // Dynamic imports for page components
 const DashboardPage = lazy(() => import('@/app/dashboard/page'));
 const SettingsPage = lazy(() => import('@/app/settings/page'));
-const AiSettingsPage = lazy(() => import('@/app/ai-settings/page'));
-const MyGroupsPage = lazy(() => import('@/app/my-groups/page'));
 const UserManagementPage = lazy(() => import('@/app/user-management/page'));
-const ReportsPage = lazy(() => import('@/app/reports/page'));
-const FirestoreRulesPage = lazy(() => import('@/app/firestore-rules/page'));
-const WorkflowPage = lazy(() => import('@/app/workflow/page'));
 const Option1Page = lazy(() => import('@/app/option1/page'));
 const Option2Page = lazy(() => import('@/app/option2/page'));
 
 const pageComponentMapping: Record<string, React.ComponentType<any>> = {
   '/dashboard': DashboardPage,
   '/settings': SettingsPage,
-  '/workflow': WorkflowPage,
-  '/ai-settings': AiSettingsPage,
-  '/reports': ReportsPage,
-  '/my-groups': MyGroupsPage,
   '/user-management': UserManagementPage,
-  '/firestore-rules': FirestoreRulesPage,
   '/option1': Option1Page,
   '/option2': Option2Page,
 };
