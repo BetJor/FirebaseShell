@@ -32,11 +32,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useTranslations } from "@/hooks/use-translations";
 
 export default function GroupManagementPage() {
   const { toast } = useToast();
-  const t = useTranslations("GroupManagement");
   
   const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -48,11 +46,11 @@ export default function GroupManagementPage() {
       setGroups(fetchedGroups);
     } catch (error) {
       console.error("Failed to load groups:", error);
-      toast({ variant: "destructive", title: t("errors.loadFailedTitle"), description: t("errors.loadFailedDescription") });
+      toast({ variant: "destructive", title: "Error de Carga", description: "No se han podido cargar los grupos." });
     } finally {
       setIsLoading(false);
     }
-  }, [toast, t]);
+  }, [toast]);
 
   useEffect(() => {
     loadGroups();
@@ -61,16 +59,15 @@ export default function GroupManagementPage() {
   const handleDelete = async (groupId: string) => {
     try {
       await deleteGroup(groupId);
-      toast({ title: t("toast.deleteSuccessTitle"), description: t("toast.deleteSuccessDescription") });
+      toast({ title: "Grupo Eliminado", description: "El grupo se ha eliminado de la lista de la aplicación." });
       await loadGroups();
     } catch (error) {
       console.error("Failed to delete group:", error);
-      toast({ variant: "destructive", title: t("errors.deleteFailedTitle"), description: t("errors.deleteFailedDescription") });
+      toast({ variant: "destructive", title: "Error al Eliminar", description: "No se ha podido eliminar el grupo." });
     }
   };
 
   const handleImport = () => {
-    // Aquesta funció s'implementarà en el següent pas
     toast({ title: "Funcionalidad no implementada", description: "La importación de grupos de Google se añadirá próximamente." });
   }
 
@@ -78,12 +75,12 @@ export default function GroupManagementPage() {
     <>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
-          <p className="text-muted-foreground">{t("description")}</p>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Grupos</h1>
+          <p className="text-muted-foreground">Gestiona los grupos de Google Workspace que son relevantes para esta aplicación.</p>
         </div>
         <Button onClick={handleImport}>
           <PlusCircle className="mr-2 h-4 w-4" />
-          {t("importGroups")}
+          Importar Grupos de Google
         </Button>
       </div>
       <Card>
@@ -92,10 +89,10 @@ export default function GroupManagementPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>{t("col.name")}</TableHead>
-                  <TableHead>{t("col.id")}</TableHead>
-                  <TableHead>{t("col.description")}</TableHead>
-                  <TableHead className="text-right">{t("col.actions")}</TableHead>
+                  <TableHead>Nombre del Grupo</TableHead>
+                  <TableHead>ID (Email del Grupo)</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -120,15 +117,15 @@ export default function GroupManagementPage() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>{t("deleteConfirmation")}</AlertDialogTitle>
+                              <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                               <AlertDialogDescription>
-                                {t("deleteConfirmationMessage")}
+                                Esta acción eliminará el grupo de la lista de grupos visibles en la aplicación, pero no lo borrará de Google Workspace.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
                               <AlertDialogAction onClick={() => handleDelete(group.id!)}>
-                                {t("delete")}
+                                Eliminar
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -139,7 +136,7 @@ export default function GroupManagementPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={4} className="h-24 text-center">
-                      {t("noGroups")}
+                      No hay grupos importados. Haz clic en 'Importar' para empezar.
                     </TableCell>
                   </TableRow>
                 )}
