@@ -38,9 +38,7 @@ function ErrorDisplay({ error, hasAdminEmailEnv, adminEmail }: { error: string |
                 </AlertDescription>
                 <Accordion type="single" collapsible className="w-full mt-4 text-xs">
                   <AccordionItem value="item-1">
-                    <AccordionTrigger 
-                      className={cn(hasAdminEmailEnv === true && "text-green-600")}
-                    >
+                    <AccordionTrigger>
                       Pas 1: Variable d'Entorn
                     </AccordionTrigger>
                     <AccordionContent>
