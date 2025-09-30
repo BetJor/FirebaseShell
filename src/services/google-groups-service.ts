@@ -8,7 +8,7 @@
  */
 
 import { z } from 'zod';
-import { google } from 'googleapis';
+import { google, Auth } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 
 // The input is the user's email address
@@ -38,15 +38,25 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
   console.log(`[getUserGroups] Impersonating ${adminEmail} to fetch groups for ${userEmail}.`);
 
   try {
-      // Use fromJSON with an empty object to force usage of Application Default Credentials
-      // from the service account in the App Hosting environment.
-      const auth = google.auth.fromJSON({});
-      (auth as any).subject = adminEmail; // Set the user to impersonate
-      (auth as any).scopes = ['https://www.googleapis.com/auth/admin.directory.group.readonly'];
-
+      const auth = new google.auth.GoogleAuth({
+        scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
+      });
+  
+      const authClient = await auth.getClient();
+  
       const admin = google.admin({
-          version: 'directory_v1',
-          auth: auth,
+        version: 'directory_v1',
+        auth: authClient,
+        // Set the user to impersonate in the client options.
+        // This is a workaround for a limitation in the Google Auth Library where
+        // 'subject' is not directly supported in all authentication flows.
+        // By setting it in the client options, we ensure that each request
+        // made by the 'admin' client is impersonating the specified G Suite admin.
+        ...{
+          clientOptions: {
+            subject: adminEmail,
+          },
+        },
       });
 
       const response = await admin.groups.list({
