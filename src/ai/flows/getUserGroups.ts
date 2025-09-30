@@ -96,7 +96,7 @@ const getUserGroupsFlow = ai.defineFlow(
             throw new Error(`L'usuari '${userEmail}' o el domini no s'ha trobat a Google Workspace.`);
         }
         
-        throw new Error("S'ha produït un error inesperat en connectar amb l'API de Google Workspace.");
+        throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
     }
   }
 );
