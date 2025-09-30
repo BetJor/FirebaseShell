@@ -38,15 +38,12 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
   console.log(`[getUserGroups] Impersonating ${adminEmail} to fetch groups for ${userEmail}.`);
 
   try {
-      // Let Google Auth library find the credentials from the environment automatically.
-      // This is the standard and most robust way to authenticate in Google Cloud environments.
-      const auth = new google.auth.GoogleAuth({
-          scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
-          clientOptions: {
-            subject: adminEmail // User to impersonate
-          }
-      });
-      
+      // Use fromJSON with an empty object to force usage of Application Default Credentials
+      // from the service account in the App Hosting environment.
+      const auth = google.auth.fromJSON({});
+      (auth as any).subject = adminEmail; // Set the user to impersonate
+      (auth as any).scopes = ['https://www.googleapis.com/auth/admin.directory.group.readonly'];
+
       const admin = google.admin({
           version: 'directory_v1',
           auth: auth,
