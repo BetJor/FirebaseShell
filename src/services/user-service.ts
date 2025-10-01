@@ -29,19 +29,14 @@ export async function getGoogleIdFromFirebaseUid(uid: string): Promise<string> {
         throw new Error("El SDK d'administrador de Firebase no està inicialitzat. Revisa els registres del servidor.");
     }
     
-    try {
-        const userRecord = await admin.auth().getUser(uid);
-        const googleProvider = userRecord.providerData.find(
-            (provider) => provider.providerId === 'google.com'
-        );
+    const userRecord = await admin.auth().getUser(uid);
+    const googleProvider = userRecord.providerData.find(
+        (provider) => provider.providerId === 'google.com'
+    );
 
-        if (!googleProvider || !googleProvider.uid) {
-            throw new Error(`L'usuari amb UID ${uid} no té un proveïdor de Google associat o no té UID de proveïdor.`);
-        }
-        
-        return googleProvider.uid;
-    } catch (error: any) {
-        console.error(`Error en obtenir el registre d'usuari per al UID ${uid}:`, error.message);
-        throw new Error(`No s'ha pogut obtenir la informació de l'usuari de Firebase: ${uid}.`);
+    if (!googleProvider || !googleProvider.uid) {
+        throw new Error(`L'usuari amb UID ${uid} no té un proveïdor de Google associat o no té UID de proveïdor.`);
     }
+    
+    return googleProvider.uid;
 }

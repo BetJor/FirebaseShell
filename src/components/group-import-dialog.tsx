@@ -12,71 +12,21 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Terminal, AlertTriangle } from "lucide-react";
+import { Loader2, Terminal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getWorkspaceGroups, type GetWorkspaceGroupsOutput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
-import { checkAdminEmailEnv, getAdminEmailEnv } from "@/services/config-service";
-import { cn } from "@/lib/utils";
+import { useUser } from "@/hooks/use-user";
 
 function ErrorDisplay({ error }: { error: string | null }) {
-    const [hasAdminEmailEnv, setHasAdminEmailEnv] = useState<boolean | null>(null);
-    const [adminEmail, setAdminEmail] = useState<string | null>(null);
-
-    useEffect(() => {
-        checkAdminEmailEnv().then(setHasAdminEmailEnv);
-        getAdminEmailEnv().then(setAdminEmail);
-    }, []);
-
     if (!error) return null;
-
-    const isConfigError = error.includes("Google Workspace") || error.includes("403") || error.includes("GSUITE_ADMIN_EMAIL");
-
-    if (isConfigError) {
-        return (
-             <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Error de Configuració</AlertTitle>
-                <AlertDescription>
-                   La importació ha fallat. Això normalment es deu a una configuració incorrecta. Si us plau, revisa els següents punts:
-                </AlertDescription>
-                <Accordion type="single" collapsible className="w-full mt-4 text-xs">
-                  <AccordionItem value="item-1">
-                    <AccordionTrigger className="text-foreground">
-                      Pas 1: Variable d'Entorn
-                    </AccordionTrigger>
-                    <AccordionContent className="text-foreground">
-                      {adminEmail ? (
-                        <p>Variable configurada amb el valor: <span className="font-semibold">{adminEmail}</span></p>
-                      ) : (
-                        <p>Assegura't que el fitxer `.env` (o `.env.local`) a l'arrel del projecte contingui la variable `GSUITE_ADMIN_EMAIL` amb l'email d'un administrador del teu domini de Google Workspace.</p>
-                      )}
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="item-2">
-                    <AccordionTrigger className="text-foreground">Pas 2: Activar l'API Admin SDK</AccordionTrigger>
-                    <AccordionContent className="text-foreground">
-                      Ves a la teva consola de Google Cloud, cerca "Admin SDK API" a la llibreria d'APIs i assegura't que estigui habilitada per a aquest projecte.
-                    </AccordionContent>
-                  </AccordionItem>
-                   <AccordionItem value="item-3">
-                    <AccordionTrigger className="text-left text-foreground">Pas 3: Delegació a tot el domini (Domain-Wide Delegation)</AccordionTrigger>
-                    <AccordionContent className="text-foreground break-words">
-                        Aquest és el pas més important. A la Consola d'Administració de Google Workspace, ves a `Seguretat` &gt; `Control d'accés i de dades` &gt; `Controls d'API` &gt; `Delegació a tot el domini`. Afegeix un nou client d'API i proporciona l'ID de client del teu Compte de Servei i l'àmbit d'OAuth: <span className="block break-all">`https://www.googleapis.com/auth/admin.directory.group.readonly`</span>. Assegura't que l'estat sigui "Autoritzat".
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-            </Alert>
-        );
-    }
 
     return (
         <Alert variant="destructive">
             <Terminal className="h-4 w-4" />
-            <AlertTitle>Error de Càrrega</AlertTitle>
+            <AlertTitle>Error d'Importació</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
         </Alert>
     );
@@ -95,9 +45,10 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   const [selectedGroups, setSelectedGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useUser();
   
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && user) {
         setIsLoading(true);
         setError(null);
         setSelectedGroups([]);
@@ -114,7 +65,7 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
             setIsLoading(false);
           });
     }
-  }, [isOpen, existingGroups]);
+  }, [isOpen, existingGroups, user]);
 
   const handleSelectGroup = (group: UserGroup, checked: boolean | "indeterminate") => {
     if (checked) {
