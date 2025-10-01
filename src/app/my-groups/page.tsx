@@ -16,9 +16,9 @@ export default function MyGroupsPage() {
   const t = useTranslations("MyGroups");
 
   useEffect(() => {
-    if (user?.email) {
+    if (user?.uid) {
       setIsLoading(true);
-      getUserGroups(user.email)
+      getUserGroups(user.uid)
         .then(setGroups)
         .catch((err) => {
           console.error("Failed to get user groups:", err);

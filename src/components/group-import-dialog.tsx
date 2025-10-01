@@ -100,11 +100,11 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   
   useEffect(() => {
     if (isOpen) {
-      if (user?.email) {
+      if (user?.uid) {
         setIsLoading(true);
         setError(null);
         setSelectedGroups([]);
-        getUserGroups(user.email as GetUserGroupsInput)
+        getUserGroups(user.uid as GetUserGroupsInput)
           .then((groups) => {
             const existingGroupIds = new Set(existingGroups.map(g => g.id));
             setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));

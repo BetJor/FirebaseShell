@@ -3,7 +3,7 @@
  * @fileOverview A service for interacting with the Google Admin SDK to manage groups.
  *
  * - getUserGroups - A function that returns the groups for a user.
- * - GetUserGroupsInput - The input type for the getUserGroups function (user email).
+ * - GetUserGroupsInput - The input type for the getUserGroups function (user ID).
  * - GetUserGroupsOutput - The return type for the getUserGroups function (array of groups).
  */
 
@@ -12,8 +12,8 @@ import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
 
-// The input is the user's email address
-const GetUserGroupsInputSchema = z.string().email().describe("The email address of the user.");
+// The input is the user's unique ID
+const GetUserGroupsInputSchema = z.string().describe("The user's unique ID.");
 export type GetUserGroupsInput = z.infer<typeof GetUserGroupsInputSchema>;
 
 const UserGroupSchema = z.object({
@@ -28,11 +28,11 @@ export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
 
 /**
  * Retrieves the groups for a given user from Google Workspace.
- * @param userEmail The email address of the user.
+ * @param userId The unique ID of the user.
  * @returns A promise that resolves to an array of groups.
  */
-export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
-  console.log(`[getUserGroups] Starting group retrieval for user ${userEmail}.`);
+export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
+  console.log(`[getUserGroups] Starting group retrieval for user ID ${userId}.`);
 
   try {
     const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
@@ -52,21 +52,21 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
       auth: auth,
     });
 
-    console.log(`[getUserGroups] Authenticated. Requesting groups for ${userEmail} by impersonating ${adminEmail}`);
+    console.log(`[getUserGroups] Authenticated. Requesting groups for user ID ${userId} by impersonating ${adminEmail}`);
 
     const response = await admin.groups.list({
-      userKey: userEmail,
+      userKey: userId,
       maxResults: 200,
     });
     
     const groups = response.data.groups;
 
     if (!groups || groups.length === 0) {
-      console.log(`[getUserGroups] No groups found for user ${userEmail}.`);
+      console.log(`[getUserGroups] No groups found for user ID ${userId}.`);
       return [];
     }
 
-    console.log(`[getUserGroups] Found ${groups.length} groups for ${userEmail}.`);
+    console.log(`[getUserGroups] Found ${groups.length} groups for user ID ${userId}.`);
 
     const validatedGroups = GetUserGroupsOutputSchema.parse(
       groups.map(g => ({
@@ -85,7 +85,7 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
       if (error.code === 403) {
            throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
       } else if (error.code === 404) {
-          throw new Error(`L'usuari '${userEmail}' o el domini no s'ha trobat a Google Workspace.`);
+          throw new Error(`L'usuari amb ID '${userId}' o el domini no s'ha trobat a Google Workspace.`);
       }
       
       throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
