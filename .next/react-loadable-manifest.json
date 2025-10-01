@@ -1,1 +1,44 @@
-{}
+{
+  "components/shell/hooks/use-tabs.tsx -> @/app/dashboard/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/dashboard/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_dashboard_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/group-management/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/group-management/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_group-management_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/my-groups/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/my-groups/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_my-groups_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/option1/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/option1/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_option1_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/option2/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/option2/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_option2_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/settings/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/settings/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_settings_page_tsx.js"
+    ]
+  },
+  "components/shell/hooks/use-tabs.tsx -> @/app/user-management/page": {
+    "id": "components/shell/hooks/use-tabs.tsx -> @/app/user-management/page",
+    "files": [
+      "static/chunks/_app-pages-browser_src_app_user-management_page_tsx.js"
+    ]
+  }
+}

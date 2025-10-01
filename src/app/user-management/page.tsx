@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, Pencil, PlusCircle, Trash2, LogIn } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import type { User } from "@/lib/types";
-import { getUsers, addUser, updateUser, deleteUser } from "@/lib/data";
+import type { User, UserGroup } from "@/lib/types";
+import { getUsers, addUser, updateUser, deleteUser, getGroups } from "@/lib/data";
 import { useToast } from "@/components/shell/hooks/use-toast";
 import { UserFormDialog } from "@/components/user-form-dialog";
 import {
@@ -41,26 +42,31 @@ export default function UserManagementPage() {
   const { toast } = useToast();
   const { user: currentUser, isAdmin, impersonateUser } = useUser();
   const [users, setUsers] = useState<User[]>([]);
+  const [groups, setGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const loadUsers = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-        const fetchedUsers = await getUsers();
+        const [fetchedUsers, fetchedGroups] = await Promise.all([
+          getUsers(),
+          getGroups()
+        ]);
         setUsers(fetchedUsers);
+        setGroups(fetchedGroups);
     } catch (error) {
-        console.error("Failed to load users:", error);
-        toast({ variant: "destructive", title: "Error", description: "No se han podido cargar los usuarios." });
+        console.error("Failed to load data:", error);
+        toast({ variant: "destructive", title: "Error", description: "No se han podido cargar los datos." });
     } finally {
         setIsLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
+    loadData();
+  }, [loadData]);
 
   const handleAddNew = () => {
     setEditingUser(null);
@@ -76,7 +82,7 @@ export default function UserManagementPage() {
     try {
         await deleteUser(userId);
         toast({ title: "Usuario eliminado", description: "El usuario se ha eliminado correctamente." });
-        await loadUsers();
+        await loadData();
     } catch (error) {
         console.error("Failed to delete user:", error);
         toast({ variant: "destructive", title: "Error", description: "No se pudo eliminar el usuario." });
@@ -92,7 +98,7 @@ export default function UserManagementPage() {
             await addUser(data);
             toast({ title: "Usuario creado", description: "El usuario se ha creado correctamente." });
         }
-        await loadUsers();
+        await loadData();
         setIsFormOpen(false);
     } catch (error) {
         console.error("Failed to save user:", error);
@@ -107,6 +113,11 @@ export default function UserManagementPage() {
       description: `Ahora estás actuando como ${userToImpersonate.name}. Recargando...`,
     });
   };
+  
+  const getGroupNames = (groupIds: string[] | undefined) => {
+    if (!groupIds) return [];
+    return groupIds.map(id => groups.find(g => g.id === id)?.name).filter(Boolean) as string[];
+  }
 
 
   return (
@@ -131,13 +142,14 @@ export default function UserManagementPage() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Correo Electrónico</TableHead>
                 <TableHead>Rol</TableHead>
+                <TableHead>Grupos</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
                 {isLoading ? (
                     <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={6} className="h-24 text-center">
                             <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                         </TableCell>
                     </TableRow>
@@ -153,6 +165,13 @@ export default function UserManagementPage() {
                         <TableCell className="font-medium">{user.name}</TableCell>
                         <TableCell className="text-muted-foreground">{user.email}</TableCell>
                         <TableCell>{user.role}</TableCell>
+                        <TableCell>
+                            <div className="flex flex-wrap gap-1">
+                                {getGroupNames(user.groupIds).map(groupName => (
+                                    <Badge key={groupName} variant="secondary">{groupName}</Badge>
+                                ))}
+                            </div>
+                        </TableCell>
                         <TableCell className="text-right">
                              {isAdmin && currentUser?.id !== user.id && (
                                 <Button variant="ghost" size="icon" onClick={() => handleImpersonate(user)} title={`Impersonar ${user.name}`}>
@@ -186,7 +205,7 @@ export default function UserManagementPage() {
                     ))
                 ) : (
                     <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">
+                        <TableCell colSpan={6} className="h-24 text-center">
                             No se han encontrado usuarios.
                         </TableCell>
                     </TableRow>

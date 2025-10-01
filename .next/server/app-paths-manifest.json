@@ -1,6 +1,8 @@
 {
-  "/page": "app/page.js",
-  "/group-management/page": "app/group-management/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/my-groups/page": "app/my-groups/page.js"
+  "/option1/page": "app/option1/page.js",
+  "/group-management/page": "app/group-management/page.js",
+  "/login/page": "app/login/page.js",
+  "/user-management/page": "app/user-management/page.js",
+  "/page": "app/page.js"
 }
