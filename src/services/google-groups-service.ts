@@ -87,12 +87,15 @@ export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUser
     return validatedGroups;
 
   } catch (error: any) {
+    if (error.code === 404) {
+      console.warn(`[getUserGroups] User with Google ID corresponding to Firebase UID ${userId} not found in Google Workspace. This is expected for non-Workspace users. Returning empty group list.`);
+      return []; // Return empty array if user is not found, which is a valid case.
+    }
+    
     console.error('[getUserGroups] An error occurred:', error.message, error.stack);
 
       if (error.code === 403) {
            throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
-      } else if (error.code === 404) {
-          throw new Error(`L'usuari amb ID de Google '${userId}' o el domini no s'ha trobat a Google Workspace.`);
       }
       
       throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
