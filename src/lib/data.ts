@@ -93,29 +93,6 @@ export async function getUsers(): Promise<User[]> {
   return usersList;
 }
 
-// Funció per obtenir usuaris per una llista d'emails
-export async function getUsersFromFirestoreByEmail(emails: string[]): Promise<User[]> {
-    if (emails.length === 0) {
-        return [];
-    }
-    const usersRef = collection(useDb(), 'users');
-    // Firestore 'in' query is limited to 30 elements
-    const chunks = [];
-    for (let i = 0; i < emails.length; i += 30) {
-        chunks.push(emails.slice(i, i + 30));
-    }
-
-    const userPromises = chunks.map(async (chunk) => {
-        const q = query(usersRef, where('email', 'in', chunk));
-        const querySnapshot = await getDocs(q);
-        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-    });
-
-    const chunkResults = await Promise.all(userPromises);
-    return chunkResults.flat();
-}
-
-
 // Funció per afegir un usuari (per a gestió manual)
 export async function addUser(data: Omit<User, 'id'>): Promise<string> {
   const usersCol = collection(useDb(), 'users');

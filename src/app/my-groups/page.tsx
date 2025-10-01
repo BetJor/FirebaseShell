@@ -1,36 +1,62 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { getWorkspaceGroups, GetWorkspaceGroupsOutput } from '@/services/google-groups-service';
+import { useState, useEffect, useCallback } from 'react';
+import { getGroups, getUsers } from '@/lib/data';
+import { getGroupMembersRecursive } from '@/services/google-groups-service';
+import type { UserGroup, User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, AlertTriangle, Users } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useUser } from '@/hooks/use-user';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 export default function MyGroupsPage() {
-  const [groups, setGroups] = useState<GetWorkspaceGroupsOutput>([]);
+  const [myGroups, setMyGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user } = useUser();
+
+  const loadMyGroups = useCallback(async () => {
+    if (!user?.email) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const allImportedGroups = await getGroups();
+      
+      const userGroups: UserGroup[] = [];
+      
+      for (const group of allImportedGroups) {
+        const members = await getGroupMembersRecursive(group.id);
+        if (members.includes(user.email)) {
+          userGroups.push(group);
+        }
+      }
+      
+      setMyGroups(userGroups);
+      
+    } catch (err: any) {
+      console.error("Failed to determine user's groups:", err);
+      setError(err.message || 'An unknown error occurred while fetching group memberships.');
+    } finally {
+      setIsLoading(false);
+    }
+    
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
-      getWorkspaceGroups(user.uid)
-        .then(setGroups)
-        .catch(err => {
-          console.error("Failed to fetch groups:", err);
-          setError(err.message || 'An unknown error occurred.');
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [user]);
+    loadMyGroups();
+  }, [loadMyGroups]);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Verificant les teves pertinences a grups...</span>
       </div>
     );
   }
@@ -53,19 +79,19 @@ export default function MyGroupsPage() {
         <h1 className="text-2xl font-bold">Els Meus Grups</h1>
       </div>
 
-      {groups.length === 0 ? (
+      {myGroups.length === 0 ? (
         <Card className="text-center">
           <CardHeader>
               <div className="mx-auto bg-secondary rounded-full p-3 w-fit">
                 <Users className="h-6 w-6 text-muted-foreground" />
               </div>
-            <CardTitle>No pertanys a cap grup</CardTitle>
-            <CardDescription>Actualment no ets membre de cap grup a Google Workspace.</CardDescription>
+            <CardTitle>No pertanys a cap grup importat</CardTitle>
+            <CardDescription>Actualment no ets membre de cap grup gestionat per aquesta aplicació.</CardDescription>
           </CardHeader>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {groups.map(group => (
+          {myGroups.map(group => (
             <Card key={group.id}>
               <CardHeader>
                 <CardTitle>{group.name}</CardTitle>
