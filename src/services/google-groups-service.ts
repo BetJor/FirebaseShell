@@ -51,11 +51,14 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
       version: 'directory_v1',
       auth: auth,
     });
+    
+    const userDomain = userEmail.split('@')[1];
 
-    console.log(`[getUserGroups] Authenticated and requesting groups for ${userEmail} by impersonating ${adminEmail}`);
+    console.log(`[getUserGroups] Authenticated. Requesting groups for ${userEmail} in domain ${userDomain} by impersonating ${adminEmail}`);
 
     const response = await admin.groups.list({
       userKey: userEmail,
+      domain: userDomain,
       maxResults: 200,
     });
     
@@ -80,7 +83,7 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
     return validatedGroups;
 
   } catch (error: any) {
-    console.error('[getUserGroups] An error occurred:', error.message);
+    console.error('[getUserGroups] An error occurred:', error.message, error);
 
       if (error.code === 403) {
            throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
