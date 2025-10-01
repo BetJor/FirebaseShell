@@ -12,7 +12,20 @@ import { z } from 'zod';
 import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
-import { auth as adminAuth } from 'firebase-admin';
+import admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!admin.apps.length) {
+  try {
+    admin.initializeApp({
+      credential: admin.credential.applicationDefault(),
+    });
+    console.log('[google-groups-service] Firebase Admin SDK initialized successfully.');
+  } catch (error) {
+    console.error('[google-groups-service] Firebase Admin SDK initialization error:', error);
+  }
+}
+
 
 // The input is the user's unique Firebase ID
 const GetUserGroupsInputSchema = z.string().describe("The user's unique Firebase ID.");
@@ -37,7 +50,7 @@ export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
  */
 export async function getGoogleIdFromFirebaseUid(uid: string): Promise<string> {
     try {
-        const userRecord = await adminAuth().getUser(uid);
+        const userRecord = await admin.auth().getUser(uid);
         const googleProvider = userRecord.providerData.find(
             (provider) => provider.providerId === 'google.com'
         );
@@ -79,14 +92,14 @@ export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUser
       }
     });
 
-    const admin = google.admin({
+    const adminClient = google.admin({
       version: 'directory_v1',
       auth: auth,
     });
     
     console.log(`[getUserGroups] Authenticated. Requesting groups for Google user ID ${googleUserId} by impersonating ${adminEmail}`);
     
-    const response = await admin.groups.list({
+    const response = await adminClient.groups.list({
       userKey: googleUserId,
       maxResults: 200,
     });
