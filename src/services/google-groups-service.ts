@@ -51,14 +51,11 @@ export async function getUserGroups(userEmail: GetUserGroupsInput): Promise<GetU
       version: 'directory_v1',
       auth: auth,
     });
-    
-    const userDomain = userEmail.split('@')[1];
 
-    console.log(`[getUserGroups] Authenticated. Requesting groups for ${userEmail} in domain ${userDomain} by impersonating ${adminEmail}`);
+    console.log(`[getUserGroups] Authenticated. Requesting groups for ${userEmail} by impersonating ${adminEmail}`);
 
     const response = await admin.groups.list({
       userKey: userEmail,
-      domain: userDomain,
       maxResults: 200,
     });
     
