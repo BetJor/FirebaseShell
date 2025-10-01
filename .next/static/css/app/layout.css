@@ -2485,6 +2485,10 @@ body {
     max-width: 24rem;
   }
 
+  .sm\:max-w-lg {
+    max-width: 32rem;
+  }
+
   .sm\:flex-row {
     flex-direction: row;
   }

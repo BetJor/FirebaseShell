@@ -12,10 +12,11 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Terminal } from "lucide-react";
+import { Loader2, Terminal, Search } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import { getWorkspaceGroups, type GetWorkspaceGroupsOutput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
 import { useUser } from "@/hooks/use-user";
@@ -39,12 +40,12 @@ interface GroupImportDialogProps {
   existingGroups: UserGroup[];
 }
 
-
 export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }: GroupImportDialogProps) {
   const [availableGroups, setAvailableGroups] = useState<GetWorkspaceGroupsOutput>([]);
   const [selectedGroups, setSelectedGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { user } = useUser();
   
   useEffect(() => {
@@ -52,7 +53,8 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
         setIsLoading(true);
         setError(null);
         setSelectedGroups([]);
-        getWorkspaceGroups()
+        setSearchTerm("");
+        getWorkspaceGroups(user.uid)
           .then((groups) => {
             const existingGroupIds = new Set(existingGroups.map(g => g.id));
             setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
@@ -78,10 +80,15 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
   const handleConfirmImport = () => {
     onImport(selectedGroups);
   };
+  
+  const filteredGroups = availableGroups.filter(group => 
+    group.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    group.id.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Importar Grups de Google</DialogTitle>
           <DialogDescription>
@@ -89,6 +96,16 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
+          <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Cerca per nom o email del grup..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+          </div>
+
           {isLoading && (
             <div className="flex items-center justify-center h-24">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -100,15 +117,21 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
           {!isLoading && !error && availableGroups.length === 0 && (
             <p className="text-sm text-muted-foreground text-center">No hay nuevos grupos disponibles para importar o no perteneces a ningún grupo.</p>
           )}
+
+          {!isLoading && !error && filteredGroups.length === 0 && searchTerm && (
+              <p className="text-sm text-muted-foreground text-center">No s'han trobat grups amb el terme '{searchTerm}'.</p>
+          )}
+
           {!isLoading && !error && availableGroups.length > 0 && (
             <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
-              {availableGroups.map((group) => (
+              {filteredGroups.map((group) => (
                 <div key={group.id} className="flex items-center space-x-2 rounded-md border p-3 hover:bg-muted/50">
                   <Checkbox
                     id={group.id}
+                    checked={selectedGroups.some(g => g.id === group.id)}
                     onCheckedChange={(checked) => handleSelectGroup(group, checked)}
                   />
-                  <Label htmlFor={group.id} className="flex flex-col">
+                  <Label htmlFor={group.id} className="flex flex-col flex-1 cursor-pointer">
                     <span className="font-medium">{group.name}</span>
                     <span className="text-xs text-muted-foreground">{group.id}</span>
                   </Label>

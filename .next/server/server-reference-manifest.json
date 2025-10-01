@@ -109,6 +109,27 @@
         "app/dashboard/page": "action-browser",
         "app/_not-found/page": "action-browser"
       }
+    },
+    "4079d254dced4c7037372098587b9f18afcfdaa302": {
+      "workers": {
+        "app/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fuser%2Fstudio%2Fsrc%2Fservices%2Fgoogle-groups-service.ts%22%2C%5B%7B%22id%22%3A%2200755e7b5c3cf8ae55edcac8872ee995a1bef236e5%22%2C%22exportedName%22%3A%22getWorkspaceGroups%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/group-management/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fuser%2Fstudio%2Fsrc%2Fservices%2Fgoogle-groups-service.ts%22%2C%5B%7B%22id%22%3A%2200755e7b5c3cf8ae55edcac8872ee995a1bef236e5%22%2C%22exportedName%22%3A%22getWorkspaceGroups%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        },
+        "app/dashboard/page": {
+          "moduleId": "(action-browser)/./node_modules/next/dist/build/webpack/loaders/next-flight-action-entry-loader.js?actions=%5B%5B%22%2Fhome%2Fuser%2Fstudio%2Fsrc%2Fservices%2Fgoogle-groups-service.ts%22%2C%5B%7B%22id%22%3A%2200755e7b5c3cf8ae55edcac8872ee995a1bef236e5%22%2C%22exportedName%22%3A%22getWorkspaceGroups%22%7D%5D%5D%5D&__client_imported__=true!",
+          "async": false
+        }
+      },
+      "layer": {
+        "app/page": "action-browser",
+        "app/group-management/page": "action-browser",
+        "app/dashboard/page": "action-browser"
+      }
     }
   },
   "edge": {},
