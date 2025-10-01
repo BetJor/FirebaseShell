@@ -3,7 +3,6 @@
  * @fileOverview A service for interacting with the Google Admin SDK to manage groups.
  *
  * - getUserGroups - A function that returns the groups for a user.
- * - getGoogleIdFromFirebaseUid - A function to get the Google ID from a Firebase UID.
  * - GetUserGroupsInput - The input type for the getUserGroups function (user ID).
  * - GetUserGroupsOutput - The return type for the getUserGroups function (array of groups).
  */
@@ -12,20 +11,7 @@ import { z } from 'zod';
 import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
-import admin from 'firebase-admin';
-
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-    });
-    console.log('[google-groups-service] Firebase Admin SDK initialized successfully.');
-  } catch (error) {
-    console.error('[google-groups-service] Firebase Admin SDK initialization error:', error);
-  }
-}
-
+import { getGoogleIdFromFirebaseUid } from './user-service';
 
 // The input is the user's unique Firebase ID
 const GetUserGroupsInputSchema = z.string().describe("The user's unique Firebase ID.");
@@ -42,30 +28,6 @@ const UserGroupSchema = z.object({
 // The return value is an array of groups
 const GetUserGroupsOutputSchema = z.array(UserGroupSchema);
 export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
-
-/**
- * Retrieves the Google ID from a Firebase UID.
- * @param uid The Firebase user ID.
- * @returns A promise that resolves to the Google ID.
- */
-export async function getGoogleIdFromFirebaseUid(uid: string): Promise<string> {
-    try {
-        const userRecord = await admin.auth().getUser(uid);
-        const googleProvider = userRecord.providerData.find(
-            (provider) => provider.providerId === 'google.com'
-        );
-
-        if (!googleProvider || !googleProvider.uid) {
-            throw new Error(`L'usuari amb UID ${uid} no té un proveïdor de Google associat o no té UID de proveïdor.`);
-        }
-        
-        return googleProvider.uid;
-    } catch (error) {
-        console.error(`Error en obtenir el registre d'usuari per al UID ${uid}:`, error);
-        throw new Error(`No s'ha pogut obtenir la informació de l'usuari de Firebase: ${uid}.`);
-    }
-}
-
 
 /**
  * Retrieves the groups for a given user from Google Workspace.
@@ -130,7 +92,7 @@ export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUser
       if (error.code === 403) {
            throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");
       } else if (error.code === 404) {
-          throw new Error(`L'usuari amb ID '${userId}' o el domini no s'ha trobat a Google Workspace.`);
+          throw new Error(`L'usuari amb ID de Google '${userId}' o el domini no s'ha trobat a Google Workspace.`);
       }
       
       throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
