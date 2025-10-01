@@ -2,9 +2,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { getGroups, getUsers } from '@/lib/data';
-import { getGroupMembersRecursive } from '@/services/google-groups-service';
-import type { UserGroup, User } from '@/lib/types';
+import { getGroups } from '@/lib/data';
+import type { UserGroup } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, AlertTriangle, Users } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
@@ -17,7 +16,7 @@ export default function MyGroupsPage() {
   const { user } = useUser();
 
   const loadMyGroups = useCallback(async () => {
-    if (!user?.email) {
+    if (!user || !user.groupIds) {
       setIsLoading(false);
       return;
     }
@@ -26,22 +25,18 @@ export default function MyGroupsPage() {
     setError(null);
     
     try {
-      const allImportedGroups = await getGroups();
-      
-      const userGroups: UserGroup[] = [];
-      
-      for (const group of allImportedGroups) {
-        const members = await getGroupMembersRecursive(group.id);
-        if (members.includes(user.email)) {
-          userGroups.push(group);
-        }
+      if (user.groupIds.length === 0) {
+        setMyGroups([]);
+        return;
       }
       
+      const allImportedGroups = await getGroups();
+      const userGroups = allImportedGroups.filter(group => user.groupIds!.includes(group.id));
       setMyGroups(userGroups);
       
     } catch (err: any) {
-      console.error("Failed to determine user's groups:", err);
-      setError(err.message || 'An unknown error occurred while fetching group memberships.');
+      console.error("Failed to load user's groups from Firestore:", err);
+      setError(err.message || 'An unknown error occurred while fetching group data.');
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +51,7 @@ export default function MyGroupsPage() {
     return (
       <div className="flex justify-center items-center h-64">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Verificant les teves pertinences a grups...</span>
+        <span className="ml-2">Carregant els teus grups...</span>
       </div>
     );
   }
@@ -86,7 +81,7 @@ export default function MyGroupsPage() {
                 <Users className="h-6 w-6 text-muted-foreground" />
               </div>
             <CardTitle>No pertanys a cap grup importat</CardTitle>
-            <CardDescription>Actualment no ets membre de cap grup gestionat per aquesta aplicació.</CardDescription>
+            <CardDescription>Actualment no ets membre de cap dels grups gestionats per aquesta aplicació.</CardDescription>
           </CardHeader>
         </Card>
       ) : (

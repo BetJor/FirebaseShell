@@ -33,6 +33,7 @@ export async function getUserById(userId: string): Promise<User | null> {
         createdAt: (userData.createdAt as Timestamp)?.toDate(),
         lastLogin: (userData.lastLogin as Timestamp)?.toDate(),
         dashboardLayout: userData.dashboardLayout || [],
+        groupIds: userData.groupIds || [],
       };
       return user;
     } else {
@@ -68,6 +69,7 @@ export async function createUser(
     const userRef = doc(useDb(), 'users', userId);
     await setDoc(userRef, {
       ...data,
+      groupIds: [],
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
     });

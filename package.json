@@ -49,6 +49,7 @@
     "genkit": "1.16.1",
     "googleapis": "^140.0.1",
     "handlebars": "^4.7.8",
+    "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.475.0",
     "next": "15.3.3",
     "react": "^18.3.1",
@@ -61,6 +62,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@types/lodash.isequal": "^4.5.8",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

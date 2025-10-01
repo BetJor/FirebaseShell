@@ -9,6 +9,7 @@ export interface User {
   createdAt?: Date;
   lastLogin?: Date;
   dashboardLayout?: string[];
+  groupIds?: string[];
 }
 
 export interface UserGroup {
