@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview A service for interacting with the Google Admin SDK to manage groups.
@@ -11,6 +12,32 @@ import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
 import { getAdminEmailEnv } from './config-service';
+import admin from 'firebase-admin';
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!admin.apps.length) {
+  try {
+    const serviceAccountKey = process.env.GOOGLE_APPLICATION_CREDENTIALS
+      ? JSON.parse(
+          require('fs').readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8')
+        )
+      : undefined;
+
+    if (serviceAccountKey) {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccountKey),
+      });
+      console.log('[google-groups-service] Firebase Admin SDK initialized successfully with service account key.');
+    } else {
+       admin.initializeApp({
+        credential: admin.credential.applicationDefault()
+       });
+       console.log('[google-groups-service] Firebase Admin SDK initialized successfully with application default credentials.');
+    }
+  } catch (error: any) {
+    console.error('[google-groups-service] Firebase Admin SDK initialization error:', error.message);
+  }
+}
 
 const UserGroupSchema = z.object({
   id: z.string().describe("The group's primary email address or unique ID."),
@@ -19,13 +46,12 @@ const UserGroupSchema = z.object({
   userIds: z.array(z.string()).optional().describe('An array of user IDs belonging to the group.'),
 });
 
-// The return value is an array of groups
 const GetWorkspaceGroupsOutputSchema = z.array(UserGroupSchema);
 export type GetWorkspaceGroupsOutput = z.infer<typeof GetWorkspaceGroupsOutputSchema>;
 
 /**
- * Retrieves all groups from a Google Workspace domain.
- * @returns A promise that resolves to an array of groups.
+ * Retrieves all groups from a Google Workspace domain, handling pagination.
+ * @returns A promise that resolves to an array of all groups in the domain.
  */
 export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
   console.log(`[getWorkspaceGroups] Starting group retrieval for the entire domain.`);
@@ -52,22 +78,35 @@ export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
     
     console.log(`[getWorkspaceGroups] Authenticated. Requesting all groups for domain '${domain}' by impersonating '${adminEmail}'`);
     
-    const response = await adminClient.groups.list({
-      domain: domain,
-      maxResults: 200, // You might need to handle pagination for more than 200 groups
-    });
-    
-    const groups = response.data.groups;
+    let allGroups: any[] = [];
+    let pageToken: string | undefined = undefined;
 
-    if (!groups || groups.length === 0) {
+    do {
+      const response = await adminClient.groups.list({
+        domain: domain,
+        maxResults: 200,
+        pageToken: pageToken,
+      });
+
+      const groups = response.data.groups;
+      if (groups) {
+        allGroups = allGroups.concat(groups);
+      }
+      
+      pageToken = response.data.nextPageToken || undefined;
+
+    } while (pageToken);
+
+
+    if (allGroups.length === 0) {
       console.log(`[getWorkspaceGroups] No groups found for domain '${domain}'.`);
       return [];
     }
 
-    console.log(`[getWorkspaceGroups] Found ${groups.length} groups for domain '${domain}'.`);
+    console.log(`[getWorkspaceGroups] Found a total of ${allGroups.length} groups for domain '${domain}' after handling pagination.`);
 
     const validatedGroups = GetWorkspaceGroupsOutputSchema.parse(
-      groups.map(g => ({
+      allGroups.map(g => ({
         id: g.email || g.id!,
         name: g.name || '',
         description: g.description || undefined,
