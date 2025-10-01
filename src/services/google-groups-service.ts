@@ -17,22 +17,19 @@ import admin from 'firebase-admin';
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
   try {
-    const serviceAccountKey = process.env.GOOGLE_APPLICATION_CREDENTIALS
-      ? JSON.parse(
-          require('fs').readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, 'utf8')
-        )
-      : undefined;
-
-    if (serviceAccountKey) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccountKey),
-      });
-      console.log('[google-groups-service] Firebase Admin SDK initialized successfully with service account key.');
+    const serviceAccountKeyStr = process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON;
+    if (serviceAccountKeyStr) {
+        const serviceAccountKey = JSON.parse(serviceAccountKeyStr);
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccountKey),
+        });
+        console.log('[google-groups-service] Firebase Admin SDK initialized successfully from environment variable.');
     } else {
-       admin.initializeApp({
-        credential: admin.credential.applicationDefault()
-       });
-       console.log('[google-groups-service] Firebase Admin SDK initialized successfully with application default credentials.');
+        // Fallback for production environments where ADC should be available
+        admin.initializeApp({
+            credential: admin.credential.applicationDefault()
+        });
+        console.log('[google-groups-service] Firebase Admin SDK initialized successfully with application default credentials.');
     }
   } catch (error: any) {
     console.error('[google-groups-service] Firebase Admin SDK initialization error:', error.message);
@@ -49,38 +46,49 @@ const UserGroupSchema = z.object({
 const GetWorkspaceGroupsOutputSchema = z.array(UserGroupSchema);
 export type GetWorkspaceGroupsOutput = z.infer<typeof GetWorkspaceGroupsOutputSchema>;
 
-/**
- * Retrieves all groups from a Google Workspace domain, handling pagination.
- * @returns A promise that resolves to an array of all groups in the domain.
- */
-export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
-  console.log(`[getWorkspaceGroups] Starting group retrieval for the entire domain.`);
 
-  const adminEmail = await getAdminEmailEnv();
-  if (!adminEmail) {
-    throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida o no és accessible. Aquesta variable ha de contenir l'email d'un administrador de Google Workspace per a poder suplantar la identitat.");
-  }
-  const domain = adminEmail.split('@')[1];
-  console.log(`[getWorkspaceGroups] Using admin email '${adminEmail}' and derived domain '${domain}'.`);
+const getAdminClient = async () => {
+    const adminEmail = await getAdminEmailEnv();
+    if (!adminEmail) {
+        throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida o no és accessible. Aquesta variable ha de contenir l'email d'un administrador de Google Workspace per a poder suplantar la identitat.");
+    }
 
-  try {
     const auth = new GoogleAuth({
-      scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
+      scopes: [
+        'https://www.googleapis.com/auth/admin.directory.group.readonly',
+        'https://www.googleapis.com/auth/admin.directory.group.member.readonly'
+      ],
       clientOptions: {
         subject: adminEmail,
       }
     });
 
-    const adminClient = google.admin({
+    return google.admin({
       version: 'directory_v1',
       auth: auth,
     });
-    
-    console.log(`[getWorkspaceGroups] Authenticated. Requesting all groups for domain '${domain}' by impersonating '${adminEmail}'`);
+};
+
+
+/**
+ * Retrieves all groups from a Google Workspace domain, handling pagination.
+ * @returns A promise that resolves to an array of all groups in the domain.
+ */
+export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
+  const adminEmail = await getAdminEmailEnv();
+   if (!adminEmail) {
+    throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida. No es pot continuar.");
+  }
+  const domain = adminEmail.split('@')[1];
+  console.log(`[getWorkspaceGroups] Starting group retrieval for domain '${domain}'.`);
+
+  try {
+    const adminClient = await getAdminClient();
     
     let allGroups: any[] = [];
     let pageToken: string | undefined = undefined;
 
+    console.log(`[getWorkspaceGroups] Requesting all groups for domain '${domain}' by impersonating '${adminEmail}'`);
     do {
       const response = await adminClient.groups.list({
         domain: domain,
@@ -128,3 +136,62 @@ export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
       throw new Error(`S'ha produït un error inesperat en connectar amb l'API de Google Workspace: ${error.message}`);
   }
 }
+
+/**
+ * Recursively retrieves all final user members of a Google Group, resolving nested groups.
+ * @param groupKey The email or unique ID of the group.
+ * @param adminClient An authenticated Google Admin SDK client.
+ * @param processedGroups A Set to keep track of processed groups to avoid infinite loops.
+ * @returns A Promise that resolves to an array of unique user email addresses.
+ */
+export async function getGroupMembersRecursive(
+  groupKey: string,
+  processedGroups: Set<string> = new Set()
+): Promise<string[]> {
+  if (processedGroups.has(groupKey)) {
+    console.log(`[getGroupMembersRecursive] Skipping already processed group: ${groupKey}`);
+    return []; // Avoid infinite loops
+  }
+  processedGroups.add(groupKey);
+  console.log(`[getGroupMembersRecursive] Fetching members for group: ${groupKey}`);
+
+  const adminClient = await getAdminClient();
+  let allMemberEmails: Set<string> = new Set();
+  let pageToken: string | undefined = undefined;
+
+  try {
+    do {
+      const response = await adminClient.members.list({
+        groupKey: groupKey,
+        maxResults: 200,
+        pageToken: pageToken,
+        includeDerivedMembership: false, // Important to handle recursion manually
+      });
+
+      const members = response.data.members;
+      if (members) {
+        for (const member of members) {
+          if (member.type === 'USER' && member.email) {
+            allMemberEmails.add(member.email);
+          } else if (member.type === 'GROUP' && member.email) {
+            const subGroupEmails = await getGroupMembersRecursive(member.email, processedGroups);
+            subGroupEmails.forEach(email => allMemberEmails.add(email));
+          }
+        }
+      }
+      pageToken = response.data.nextPageToken || undefined;
+    } while (pageToken);
+
+    console.log(`[getGroupMembersRecursive] Found ${allMemberEmails.size} unique user(s) for group: ${groupKey}`);
+    return Array.from(allMemberEmails);
+  } catch (error: any) {
+    console.error(`[getGroupMembersRecursive] Error fetching members for group ${groupKey}:`, error.message);
+    if (error.code === 404) {
+        console.warn(`[getGroupMembersRecursive] Group not found: ${groupKey}. Skipping.`);
+        return [];
+    }
+    // Re-throw other errors
+    throw error;
+  }
+}
+
