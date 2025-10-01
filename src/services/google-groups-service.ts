@@ -2,9 +2,9 @@
 /**
  * @fileOverview A service for interacting with the Google Admin SDK to manage groups.
  *
- * - getUserGroups - A function that returns the groups for a user.
- * - GetUserGroupsInput - The input type for the getUserGroups function (user ID).
- * - GetUserGroupsOutput - The return type for the getUserGroups function (array of groups).
+ * - getWorkspaceGroups - A function that returns all groups for a domain.
+ * - GetWorkspaceGroupsInput - The input type for the getWorkspaceGroups function (user ID).
+ * - GetWorkspaceGroupsOutput - The return type for the getWorkspaceGroups function (array of groups).
  */
 
 import { z } from 'zod';
@@ -13,9 +13,6 @@ import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
 import { getGoogleIdFromFirebaseUid } from './user-service';
 
-// The input is the user's unique Firebase ID
-const GetUserGroupsInputSchema = z.string().describe("The user's unique Firebase ID.");
-export type GetUserGroupsInput = z.infer<typeof GetUserGroupsInputSchema>;
 
 const UserGroupSchema = z.object({
   id: z.string().describe("The group's primary email address or unique ID."),
@@ -26,27 +23,26 @@ const UserGroupSchema = z.object({
 
 
 // The return value is an array of groups
-const GetUserGroupsOutputSchema = z.array(UserGroupSchema);
-export type GetUserGroupsOutput = z.infer<typeof GetUserGroupsOutputSchema>;
+const GetWorkspaceGroupsOutputSchema = z.array(UserGroupSchema);
+export type GetWorkspaceGroupsOutput = z.infer<typeof GetWorkspaceGroupsOutputSchema>;
 
 /**
- * Retrieves the groups for a given user from Google Workspace.
- * @param userId The unique Firebase ID of the user.
- * @returns A promise that resolves to an array of groups.
+ * Retrieves all groups from the Google Workspace domain.
+ * @returns A promise that resolves to an array of all groups in the domain.
  */
-export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUserGroupsOutput> {
-  console.log(`[getUserGroups] Starting group retrieval for user ID ${userId}.`);
+export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
+  console.log(`[getWorkspaceGroups] Starting group retrieval for the entire domain.`);
 
   try {
     const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
     if (!adminEmail) {
       throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida.");
     }
+    const domain = adminEmail.split('@')[1];
+    if (!domain) {
+        throw new Error("No s'ha pogut extreure el domini de GSUITE_ADMIN_EMAIL.");
+    }
     
-    // Get the user's Google-specific ID from their Firebase UID
-    const googleUserId = await getGoogleIdFromFirebaseUid(userId);
-    console.log(`[getUserGroups] Fetched Google ID ${googleUserId} for Firebase UID ${userId}`);
-
     const auth = new GoogleAuth({
       scopes: ['https://www.googleapis.com/auth/admin.directory.group.readonly'],
       clientOptions: {
@@ -59,23 +55,23 @@ export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUser
       auth: auth,
     });
     
-    console.log(`[getUserGroups] Authenticated. Requesting groups for Google user ID ${googleUserId} by impersonating ${adminEmail}`);
+    console.log(`[getWorkspaceGroups] Authenticated. Requesting all groups for domain ${domain} by impersonating ${adminEmail}`);
     
     const response = await adminClient.groups.list({
-      userKey: googleUserId,
-      maxResults: 200,
+      domain: domain,
+      maxResults: 200, // You might need to handle pagination for more than 200 groups
     });
     
     const groups = response.data.groups;
 
     if (!groups || groups.length === 0) {
-      console.log(`[getUserGroups] No groups found for user ID ${userId}.`);
+      console.log(`[getWorkspaceGroups] No groups found for domain ${domain}.`);
       return [];
     }
 
-    console.log(`[getUserGroups] Found ${groups.length} groups for user ID ${userId}.`);
+    console.log(`[getWorkspaceGroups] Found ${groups.length} groups for domain ${domain}.`);
 
-    const validatedGroups = GetUserGroupsOutputSchema.parse(
+    const validatedGroups = GetWorkspaceGroupsOutputSchema.parse(
       groups.map(g => ({
         id: g.email || g.id!,
         name: g.name || '',
@@ -83,16 +79,17 @@ export async function getUserGroups(userId: GetUserGroupsInput): Promise<GetUser
       }))
     );
 
-    console.log(`[getUserGroups] Successfully validated and mapped ${validatedGroups.length} groups.`);
+    console.log(`[getWorkspaceGroups] Successfully validated and mapped ${validatedGroups.length} groups.`);
     return validatedGroups;
 
   } catch (error: any) {
     if (error.code === 404) {
-      console.warn(`[getUserGroups] User with Google ID corresponding to Firebase UID ${userId} not found in Google Workspace. This is expected for non-Workspace users. Returning empty group list.`);
-      return []; // Return empty array if user is not found, which is a valid case.
+      // This case is less likely when fetching by domain but kept for safety.
+      console.warn(`[getWorkspaceGroups] Domain not found in Google Workspace. This should not happen. Returning empty group list.`);
+      return [];
     }
     
-    console.error('[getUserGroups] An error occurred:', error.message, error.stack);
+    console.error('[getWorkspaceGroups] An error occurred:', error.message, error.stack);
 
       if (error.code === 403) {
            throw new Error("Accés denegat (403 Forbidden). Causa probable: El Compte de Servei no té els permisos de 'Domain-Wide Delegation' correctes o l'API d'Admin SDK no està habilitada.");

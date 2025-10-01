@@ -16,8 +16,7 @@ import { Loader2, Terminal, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from "@/hooks/use-auth";
-import { getUserGroups, type GetUserGroupsOutput, type GetUserGroupsInput } from "@/services/google-groups-service";
+import { getWorkspaceGroups, type GetWorkspaceGroupsOutput } from "@/services/google-groups-service";
 import type { UserGroup } from "@/lib/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 import { checkAdminEmailEnv, getAdminEmailEnv } from "@/services/config-service";
@@ -92,19 +91,17 @@ interface GroupImportDialogProps {
 
 
 export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }: GroupImportDialogProps) {
-  const { user } = useAuth();
-  const [availableGroups, setAvailableGroups] = useState<GetUserGroupsOutput>([]);
+  const [availableGroups, setAvailableGroups] = useState<GetWorkspaceGroupsOutput>([]);
   const [selectedGroups, setSelectedGroups] = useState<UserGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     if (isOpen) {
-      if (user?.uid) {
         setIsLoading(true);
         setError(null);
         setSelectedGroups([]);
-        getUserGroups(user.uid as GetUserGroupsInput)
+        getWorkspaceGroups()
           .then((groups) => {
             const existingGroupIds = new Set(existingGroups.map(g => g.id));
             setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
@@ -116,9 +113,8 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
           .finally(() => {
             setIsLoading(false);
           });
-      }
     }
-  }, [isOpen, user, existingGroups]);
+  }, [isOpen, existingGroups]);
 
   const handleSelectGroup = (group: UserGroup, checked: boolean | "indeterminate") => {
     if (checked) {
