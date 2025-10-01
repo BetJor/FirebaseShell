@@ -54,7 +54,7 @@ export function GroupImportDialog({ isOpen, onClose, onImport, existingGroups }:
         setError(null);
         setSelectedGroups([]);
         setSearchTerm("");
-        getWorkspaceGroups(user.uid)
+        getWorkspaceGroups()
           .then((groups) => {
             const existingGroupIds = new Set(existingGroups.map(g => g.id));
             setAvailableGroups(groups.filter(g => !existingGroupIds.has(g.id)));
