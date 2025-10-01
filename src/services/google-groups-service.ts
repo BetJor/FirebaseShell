@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { google } from 'googleapis';
 import type { UserGroup } from '@/lib/types';
 import { GoogleAuth } from 'google-auth-library';
+import { getAdminEmailEnv } from './config-service';
 
 const UserGroupSchema = z.object({
   id: z.string().describe("The group's primary email address or unique ID."),
@@ -29,9 +30,9 @@ export type GetWorkspaceGroupsOutput = z.infer<typeof GetWorkspaceGroupsOutputSc
 export async function getWorkspaceGroups(): Promise<GetWorkspaceGroupsOutput> {
   console.log(`[getWorkspaceGroups] Starting group retrieval for the entire domain.`);
 
-  const adminEmail = process.env.GSUITE_ADMIN_EMAIL;
+  const adminEmail = await getAdminEmailEnv();
   if (!adminEmail) {
-    throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida.");
+    throw new Error("La variable d'entorn GSUITE_ADMIN_EMAIL no està definida o no és accessible. Aquesta variable ha de contenir l'email d'un administrador de Google Workspace per a poder suplantar la identitat.");
   }
   const domain = adminEmail.split('@')[1];
   console.log(`[getWorkspaceGroups] Using admin email '${adminEmail}' and derived domain '${domain}'.`);
